@@ -1,0 +1,159 @@
+import { createClient } from "@supabase/supabase-js";
+import models from "../models/index.js";
+
+const { Video, Transcript } = models;
+const BUCKET_NAME = "dictation_app";
+
+// Supabase client - upload từ server, dùng SERVICE_ROLE_KEY
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+// Lấy danh sách video
+export const getListVideos = async (req, res) => {
+  try {
+    const videos = await Video.findAll({
+      order: [["createdAt", "DESC"]],
+    });
+    res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error fetching videos:", error);
+    res.status(500).json({ error: "Failed to fetch videos" });
+  }
+};
+
+// Lấy video daily
+export const getDailyVideo = async (req, res) => {
+  try {
+    const video = await Video.findOne({
+      order: [["date", "DESC"]],
+      include: [{ model: Transcript }],
+    });
+
+    if (!video) return res.status(404).json({ message: "No video found" });
+
+    return res.json(video);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error fetching daily video", error: error.message });
+  }
+};
+
+// Lấy video theo ID
+export const getVideoById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const video = await Video.findByPk(id, {
+      include: [{ model: Transcript }],
+    });
+
+    if (!video) return res.status(404).json({ message: "Video not found" });
+
+    // Tạo signed URL tạm thời
+    const { data: signedVideoData, videoError } = await supabase.storage
+      .from(`${BUCKET_NAME}/videos`)
+      .createSignedUrl(video.url, 60 * 60); // 1 giờ
+
+    if (videoError) return res.status(500).json({ error: error.message });
+
+    // Tạo signed URL tạm thời
+    const { data: signedThumbnailData, thumbnailError } = await supabase.storage
+      .from(`${BUCKET_NAME}/thumbnails`)
+      .createSignedUrl(video.thumbnail, 60 * 60); // 1 giờ
+
+    if (thumbnailError) return res.status(500).json({ error: error.message });
+
+    res.json({ ...video.toJSON(), url: signedVideoData.signedUrl, thumbnail: signedThumbnailData.signedUrl });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error fetching video", error: error.message });
+  }
+};
+
+export const uploadVideo = async (req, res, next) => {
+   // Nếu file không đầy đủ
+    if (!req.files.video) {
+      return res.status(400).json({ error: "Video not uploaded" });
+    }
+
+    const videoFile = req.files.video[0];
+
+    const videoFileName = `${Date.now()}-${videoFile.originalname}`;
+
+    // Upload video
+    const { data: videoData, error: videoError } = await supabase.storage
+      .from(`${BUCKET_NAME}/videos`)
+      .upload(videoFileName, videoFile.buffer, {
+        contentType: videoFile.mimetype,
+        upsert: true,
+      });
+
+    if (videoError) return res.status(500).json({ error: videoError.message });
+
+    console.log("Upload successful", videoData);
+    
+
+    req.video = {
+      url: videoFileName,
+    }
+
+    next();
+};
+
+export const uploadThumbnail = async (req, res, next) => {
+   // Nếu file không đầy đủ
+    if (!req.files.thumbnail) {
+      return res.status(400).json({ error: "Thumbnail not uploaded" });
+    }
+
+    const thumbnailFile = req.files.thumbnail[0];
+
+    const thumbnailFileName = `${Date.now()}-${thumbnailFile.originalname}`;
+
+    // Upload thumbnail
+    const { data: thumbData, error: thumbError } = await supabase.storage
+      .from(`${BUCKET_NAME}/thumbnails`)
+      .upload(thumbnailFileName, thumbnailFile.buffer, {
+        contentType: thumbnailFile.mimetype,
+        upsert: true,
+      });
+
+    if (thumbError) return res.status(500).json({ error: thumbError.message });
+
+    console.log("Upload successful", thumbData);
+    
+    req.video = {
+      ...req.video,
+      thumbnail: thumbnailFileName,
+    }
+
+    next();
+};
+
+export const finalizeUpload = async (req, res, next) => {
+  try {
+    const videoData = req.video;
+    const validatedBody = req.validatedBody;
+
+    const newVideo = await Video.create({
+      title: validatedBody.title || "Untitled",
+      url: videoData.url,
+      date: new Date(),
+      level: validatedBody.level,
+      channel: validatedBody.channel,
+      view: 0,
+      thumbnail: videoData.thumbnail,
+      duration: validatedBody.duration,
+    });
+
+    req.video = newVideo;
+    next();
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error creating video", error: error.message });
+  }
+};

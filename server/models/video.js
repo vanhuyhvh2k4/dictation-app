@@ -1,0 +1,18 @@
+// models/video.js
+const VideoModel = (sequelize, DataTypes) => {
+  const Video = sequelize.define('Video', {
+    id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    title: { type: DataTypes.STRING, allowNull: false },
+    channel: { type: DataTypes.STRING, allowNull: false },
+    view: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    thumbnail: { type: DataTypes.STRING, allowNull: false },
+    url: { type: DataTypes.STRING, allowNull: false },
+    duration: { type: DataTypes.STRING, allowNull: false },
+    date: { type: DataTypes.DATEONLY, allowNull: true },
+    level: { type: DataTypes.STRING, allowNull: true }
+  });
+
+  return Video;
+};
+
+export default VideoModel;
