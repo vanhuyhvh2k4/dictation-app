@@ -12,7 +12,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {!auth ? (
+        {/* {!auth ? (
           <Route path="/login" element={<Login setAuth={setAuth} />} />
         ) : (
           <>
@@ -22,7 +22,11 @@ function App() {
             <Route path="/upload" element={<VideoUpload />} />
           </>
         )}
-        <Route path="*" element={<Navigate to={auth ? "/" : "/login"} />} />
+        <Route path="*" element={<Navigate to={auth ? "/" : "/login"} />} /> */}
+        <Route path="/" element={<Home />} />
+          <Route path="/videos/:id" element={<VideoDetail />} />
+          <Route path="/words" element={<WordList />} />
+          <Route path="/upload" element={<VideoUpload />} />
       </Routes>
     </BrowserRouter>
   );

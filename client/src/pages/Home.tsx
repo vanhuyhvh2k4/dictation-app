@@ -94,7 +94,7 @@ export default function HomePage() {
               >
                 <div className="relative">
                   <img
-                    src={`/src/assets/thumbnails/${video.thumbnail}`}
+                    src={`${video.thumbnail}`}
                     alt={video.title}
                   />
                   <span className="absolute bottom-2 right-2 bg-black text-white text-xs px-2 py-1 rounded">

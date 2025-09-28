@@ -39,11 +39,11 @@ router.post(
       // 3. Validate loại file (ví dụ: chỉ chấp nhận mp4, jpg, png)
     const videoFile = req.files.video[0];
     const thumbnailFile = req.files.thumbnail[0];
-    const transcriptFile = req.files.transcript?.[0];
+    const transcriptFile = req.files.transcript[0];
 
     const allowedVideoTypes = ["video/mp4", "video/mkv"];
-    const allowedImageTypes = ["image/jpeg", "image/png"];
-    const allowedSubtitleTypes = ["text/plain", "application/octet-stream"];
+    const allowedImageTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp", "image/avif"];
+    const allowedSubtitleTypes = ["text/plain", "application/octet-stream", "text/vtt", "text/srt"];
 
     if (!allowedVideoTypes.includes(videoFile.mimetype)) {
       return res.status(400).json({ error: "Unsupported video format (mp4, mkv allowed)" });
@@ -53,7 +53,7 @@ router.post(
       return res.status(400).json({ error: "Unsupported thumbnail format (jpg, png allowed)" });
     }
 
-    if (transcriptFile && !allowedSubtitleTypes.includes(transcriptFile.mimetype)) {
+    if (allowedSubtitleTypes.includes(transcriptFile.mimetype)) {
       return res.status(400).json({ error: "Unsupported transcript format (txt, srt, vtt allowed)" });
     }
 

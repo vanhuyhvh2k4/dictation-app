@@ -16,7 +16,45 @@ export const getListVideos = async (req, res) => {
     const videos = await Video.findAll({
       order: [["createdAt", "DESC"]],
     });
-    res.status(200).json(videos);
+    const listVideos = await Promise.all(
+    videos.map(async (video) => {
+      try {
+         const plainVideo = video.get({ plain: true }); // convert sạch
+
+        // Tạo signed URL tạm thời
+        const { data: signedVideoData, error: videoError } = await supabase.storage
+          .from(`${BUCKET_NAME}/videos`)
+          .createSignedUrl(video.url, 60 * 60); // 1 giờ
+          
+        if (videoError) {
+          throw videoError;
+        }
+
+        const { data: signedThumbnailData, error: thumbnailError } = await supabase.storage
+          .from(`${BUCKET_NAME}/thumbnails`)
+          .createSignedUrl(video.thumbnail, 60 * 60); // 1 giờ
+          
+        if (thumbnailError) {
+          throw thumbnailError;
+        }
+
+        return {
+          ...plainVideo,
+          url: signedVideoData?.signedUrl, // gán signedUrl
+          thumbnail: signedThumbnailData?.signedUrl,
+        };
+      } catch (err) {
+        // Trường hợp lỗi 1 video => vẫn trả video nhưng kèm cờ báo lỗi
+        return {
+          ...video,
+          url: video.url,
+          error: err.message || "Failed to create signed URL",
+        };
+      }
+    })
+  );
+
+    res.status(200).json(listVideos);
   } catch (error) {
     console.error("Error fetching videos:", error);
     res.status(500).json({ error: "Failed to fetch videos" });
@@ -65,7 +103,11 @@ export const getVideoById = async (req, res) => {
 
     if (thumbnailError) return res.status(500).json({ error: error.message });
 
-    res.json({ ...video.toJSON(), url: signedVideoData.signedUrl, thumbnail: signedThumbnailData.signedUrl });
+    res.json({
+      ...video.toJSON(),
+      url: signedVideoData.signedUrl,
+      thumbnail: signedThumbnailData.signedUrl,
+    });
   } catch (error) {
     return res
       .status(500)
@@ -74,63 +116,62 @@ export const getVideoById = async (req, res) => {
 };
 
 export const uploadVideo = async (req, res, next) => {
-   // Nếu file không đầy đủ
-    if (!req.files.video) {
-      return res.status(400).json({ error: "Video not uploaded" });
-    }
+  // Nếu file không đầy đủ
+  if (!req.files.video) {
+    return res.status(400).json({ error: "Video not uploaded" });
+  }
 
-    const videoFile = req.files.video[0];
+  const videoFile = req.files.video[0];
 
-    const videoFileName = `${Date.now()}-${videoFile.originalname}`;
+  const videoFileName = `${Date.now()}-${videoFile.originalname}`;
 
-    // Upload video
-    const { data: videoData, error: videoError } = await supabase.storage
-      .from(`${BUCKET_NAME}/videos`)
-      .upload(videoFileName, videoFile.buffer, {
-        contentType: videoFile.mimetype,
-        upsert: true,
-      });
+  // Upload video
+  const { data: videoData, error: videoError } = await supabase.storage
+    .from(`${BUCKET_NAME}/videos`)
+    .upload(videoFileName, videoFile.buffer, {
+      contentType: videoFile.mimetype,
+      upsert: true,
+    });
 
-    if (videoError) return res.status(500).json({ error: videoError.message });
+  if (videoError) return res.status(500).json({ error: videoError.message });
 
-    console.log("Upload successful", videoData);
-    
+  console.log("Upload successful", videoData);
 
-    req.video = {
-      url: videoFileName,
-    }
+  req.video = {
+    url: videoFileName,
+  };
 
-    next();
+  next();
 };
 
 export const uploadThumbnail = async (req, res, next) => {
-   // Nếu file không đầy đủ
-    if (!req.files.thumbnail) {
-      return res.status(400).json({ error: "Thumbnail not uploaded" });
-    }
+  // Nếu file không đầy đủ
+  if (!req.files.thumbnail) {
+    return res.status(400).json({ error: "Thumbnail not uploaded" });
+  }
 
-    const thumbnailFile = req.files.thumbnail[0];
+  const thumbnailFile = req.files.thumbnail[0];
 
-    const thumbnailFileName = `${Date.now()}-${thumbnailFile.originalname}`;
+  const thumbnailFileName = `${Date.now()}-${thumbnailFile.originalname}`;
 
-    // Upload thumbnail
-    const { data: thumbData, error: thumbError } = await supabase.storage
-      .from(`${BUCKET_NAME}/thumbnails`)
-      .upload(thumbnailFileName, thumbnailFile.buffer, {
-        contentType: thumbnailFile.mimetype,
-        upsert: true,
-      });
+  // Upload thumbnail
+  const { data: thumbData, error: thumbError } = await supabase.storage
+    .from(`${BUCKET_NAME}/thumbnails`)
+    .upload(thumbnailFileName, thumbnailFile.buffer, {
+      contentType: thumbnailFile.mimetype,
+      upsert: true,
+    });
 
-    if (thumbError) return res.status(500).json({ error: thumbError.message });
+  if (thumbError) return res.status(500).json({ error: thumbError.message });
 
-    console.log("Upload successful", thumbData);
-    
-    req.video = {
-      ...req.video,
-      thumbnail: thumbnailFileName,
-    }
+  console.log("Upload successful", thumbData);
 
-    next();
+  req.video = {
+    ...req.video,
+    thumbnail: thumbnailFileName,
+  };
+
+  next();
 };
 
 export const finalizeUpload = async (req, res, next) => {
