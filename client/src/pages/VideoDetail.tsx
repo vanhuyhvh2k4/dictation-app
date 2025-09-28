@@ -40,6 +40,17 @@ export default function VideoDictation() {
     }
   };
 
+  const handlePlayVideo = () => {
+    if (
+      currentTranscript &&
+      videoRef.current &&
+      videoRef.current.currentTime >= currentTranscript.end
+    ) {
+      // Quay lại đầu transcript
+      videoRef.current.currentTime = currentTranscript.start;
+    }
+  };
+
   // When user answers correctly → go to next transcript
   const handleCheckAnswer = () => {
     if (!currentTranscript) return;
@@ -51,7 +62,10 @@ export default function VideoDictation() {
         .toLowerCase();
 
     const userWords = answer.trim().split(/\s+/).map(normalize);
-    const correctWords = currentTranscript.text.trim().split(/\s+/).map(normalize);
+    const correctWords = currentTranscript.text
+      .trim()
+      .split(/\s+/)
+      .map(normalize);
 
     const result: FeedbackItem[] = correctWords.map((word, idx) => {
       if (userWords[idx] && userWords[idx] === word) {
@@ -75,7 +89,10 @@ export default function VideoDictation() {
     if (videoRef.current) videoRef.current.pause();
 
     const correctWords = currentTranscript.text.trim().split(/\s+/);
-    const result: FeedbackItem[] = correctWords.map((word) => ({ word, correct: true }));
+    const result: FeedbackItem[] = correctWords.map((word) => ({
+      word,
+      correct: true,
+    }));
 
     setFeedback(result);
     setScore(0);
@@ -134,6 +151,7 @@ export default function VideoDictation() {
                 width="100%"
                 controls
                 onTimeUpdate={handleTimeUpdate}
+                onPlay={handlePlayVideo}
               >
                 <source src={`${video.url}`} type="video/mp4" />
                 Your browser does not support the video tag.
@@ -141,7 +159,9 @@ export default function VideoDictation() {
             )}
             <div className="p-4">
               <h2 className="text-lg font-semibold">{video?.title}</h2>
-              <p className="text-sm text-gray-500">Vocab level: {video?.level}</p>
+              <p className="text-sm text-gray-500">
+                Vocab level: {video?.level}
+              </p>
             </div>
           </div>
 
@@ -155,7 +175,8 @@ export default function VideoDictation() {
                 className="px-3 py-1 text-sm bg-red-600 text-white rounded"
                 onClick={() => {
                   if (videoRef.current) {
-                    videoRef.current.currentTime = currentTranscript?.start || 0;
+                    videoRef.current.currentTime =
+                      currentTranscript?.start || 0;
                     videoRef.current.play();
                   }
                 }}
@@ -205,15 +226,22 @@ export default function VideoDictation() {
                 ) : (
                   <div className="space-y-3">
                     {isCorrect ? (
-                      <p className="text-green-600 font-semibold">✅ You are correct!</p>
+                      <p className="text-green-600 font-semibold">
+                        ✅ You are correct!
+                      </p>
                     ) : (
-                      <p className="text-yellow-600 font-semibold">⏭️ You skipped this one</p>
+                      <p className="text-yellow-600 font-semibold">
+                        ⏭️ You skipped this one
+                      </p>
                     )}
                     {currentTranscript?.translation && (
-                      <p className="text-gray-700">{currentTranscript.translation}</p>
+                      <p className="text-gray-700">
+                        {currentTranscript.translation}
+                      </p>
                     )}
                     <p className="text-sm text-gray-600">
-                      {currentTranscript?.pronunciation || currentTranscript?.text}
+                      {currentTranscript?.pronunciation ||
+                        currentTranscript?.text}
                     </p>
                     <button
                       onClick={handleNext}
