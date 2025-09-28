@@ -23,10 +23,12 @@ function App() {
           </>
         )}
         <Route path="*" element={<Navigate to={auth ? "/" : "/login"} />} /> */}
-        <Route path="/" element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route path="/videos/:id" element={<VideoDetail />} />
           <Route path="/words" element={<WordList />} />
           <Route path="/upload" element={<VideoUpload />} />
+
+          <Route path="/signin" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );
