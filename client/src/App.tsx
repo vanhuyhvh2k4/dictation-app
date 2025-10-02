@@ -1,10 +1,27 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import VideoDetail from "./pages/VideoDetail";
 import WordList from "./pages/WordList";
 import Home from "./pages/Home";
 import VideoUpload from "./pages/VideoUpload";
+import AppLayout from "./layout/AppLayout";
+import UserProfiles from "./pages/UserProfiles";
+import Blank from "./pages/Blank";
+import FormElements from "./pages/Forms/FormElements";
+import BasicTables from "./pages/Tables/BasicTables";
+import Alerts from "./pages/UiElements/Alerts";
+import Avatars from "./pages/UiElements/Avatars";
+import Badges from "./pages/UiElements/Badges";
+import Buttons from "./pages/UiElements/Buttons";
+import Images from "./pages/UiElements/Images";
+import Videos from "./pages/UiElements/Videos";
+import LineChart from "./pages/Charts/LineChart";
+import BarChart from "./pages/Charts/BarChart";
+import SignIn from "./pages/AuthPages/SignIn";
+import SignUp from "./pages/AuthPages/SignUp";
+import NotFound from "./pages/OtherPage/NotFound";
+import HomeDashboard  from "./pages/Dashboard/Home";
+import Calendar from "./pages/Calendar";
 
 function App() {
   const [auth, setAuth] = useState(!!localStorage.getItem("token"));
@@ -12,23 +29,44 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* {!auth ? (
-          <Route path="/login" element={<Login setAuth={setAuth} />} />
-        ) : (
-          <>
-            <Route path="/" element={<Home />} />
-            <Route path="/videos/:id" element={<VideoDetail />} />
-            <Route path="/words" element={<WordList />} />
-            <Route path="/upload" element={<VideoUpload />} />
-          </>
-        )}
-        <Route path="*" element={<Navigate to={auth ? "/" : "/login"} />} /> */}
-          <Route path="/" element={<Home />} />
-          <Route path="/videos/:id" element={<VideoDetail />} />
-          <Route path="/words" element={<WordList />} />
-          <Route path="/upload" element={<VideoUpload />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/videos/:id" element={<VideoDetail />} />
+        <Route path="/words" element={<WordList />} />
+        <Route path="/upload" element={<VideoUpload />} />
 
-          <Route path="/signin" element={<Login />} />
+        <Route element={<AppLayout />}>
+            <Route index path="/" element={<HomeDashboard />} />
+
+            {/* Others Page */}
+            <Route path="/profile" element={<UserProfiles />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/blank" element={<Blank />} />
+
+            {/* Forms */}
+            <Route path="/form-elements" element={<FormElements />} />
+
+            {/* Tables */}
+            <Route path="/basic-tables" element={<BasicTables />} />
+
+            {/* Ui Elements */}
+            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/avatars" element={<Avatars />} />
+            <Route path="/badge" element={<Badges />} />
+            <Route path="/buttons" element={<Buttons />} />
+            <Route path="/images" element={<Images />} />
+            <Route path="/videos" element={<Videos />} />
+
+            {/* Charts */}
+            <Route path="/line-chart" element={<LineChart />} />
+            <Route path="/bar-chart" element={<BarChart />} />
+          </Route>
+
+          {/* Auth Layout */}
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+
+          {/* Fallback Route */}
+          <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
