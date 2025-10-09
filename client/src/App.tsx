@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import VideoDetail from "./pages/VideoDetail";
 import WordList from "./pages/WordList";
@@ -6,6 +5,7 @@ import Home from "./pages/Home";
 import VideoUpload from "./pages/VideoUpload";
 import AppLayout from "./layout/AppLayout";
 import UserProfiles from "./pages/UserProfiles";
+import { ProtectedRoute, PublicRoute } from './middleware/authMiddleware';
 import Blank from "./pages/Blank";
 import FormElements from "./pages/Forms/FormElements";
 import BasicTables from "./pages/Tables/BasicTables";
@@ -22,20 +22,22 @@ import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import HomeDashboard  from "./pages/Dashboard/Home";
 import Calendar from "./pages/Calendar";
+import AddLesson from "./pages/Lessions/AddLesson";
 
 function App() {
-  const [auth, setAuth] = useState(!!localStorage.getItem("token"));
-
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/home" element={<Home />} />
-        <Route path="/videos/:id" element={<VideoDetail />} />
-        <Route path="/words" element={<WordList />} />
-        <Route path="/upload" element={<VideoUpload />} />
+        {/* Protected Routes */}
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/videos/:id" element={<ProtectedRoute><VideoDetail /></ProtectedRoute>} />
+        <Route path="/words" element={<ProtectedRoute><WordList /></ProtectedRoute>} />
+        <Route path="/upload" element={<ProtectedRoute><VideoUpload /></ProtectedRoute>} />
 
-        <Route element={<AppLayout />}>
+        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index path="/" element={<HomeDashboard />} />
+
+            <Route path="/add-lesson" element={<AddLesson />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
@@ -61,9 +63,9 @@ function App() {
             <Route path="/bar-chart" element={<BarChart />} />
           </Route>
 
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+          {/* Auth Layout - Public Routes */}
+          <Route path="/signin" element={<PublicRoute><SignIn /></PublicRoute>} />
+          <Route path="/signup" element={<PublicRoute><SignUp /></PublicRoute>} />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
