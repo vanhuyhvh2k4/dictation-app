@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import { getVideos } from "../services/videoServices";
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
+import Cookies from "js-cookie";
 import type { Video } from "../types/video";
 
 export default function HomePage() {
   const [level, setLevel] = useState<string>("intermediate");
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const isLoggedIn = !!Cookies.get("token");
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -24,6 +26,11 @@ export default function HomePage() {
 
     fetchVideos();
   }, []);
+
+  const getProgressPercentage = (progress: Video['progress']) => {
+    if (!progress) return 0;
+    return Math.round((progress.transcriptsCompleted / progress.totalTranscripts) * 100);
+  };
 
   if (loading) return <p>Loading...</p>;
 
@@ -53,7 +60,7 @@ export default function HomePage() {
           A Learning Experience Personalized
         </h3>
         <p className="text-gray-600 mb-6">
-          Achieve your goals with videos that’s tailored to your proficiency
+          Achieve your goals with videos that's tailored to your proficiency
           level, and interests. Stay motivated with real-time feedback, progress
           trackers, and handy visualizations.
         </p>
@@ -106,6 +113,22 @@ export default function HomePage() {
                   <p className="text-xs text-gray-500">
                     {video.channel} • {video.view} • {video.date}
                   </p>
+                  
+                  {/* Progress bar - Only show for logged in users with progress */}
+                  {isLoggedIn && video.progress && (
+                    <div className="mt-2">
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+                        <div 
+                          className="bg-red-600 h-1.5 rounded-full transition-all duration-300"
+                          style={{ width: `${getProgressPercentage(video.progress)}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between items-center text-xs text-gray-500">
+                        <span>{video.progress.transcriptsCompleted} / {video.progress.totalTranscripts} completed</span>
+                        <span>{video.progress.totalScore.toFixed(0)} points</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </Link>
             ))}

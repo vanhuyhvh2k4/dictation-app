@@ -26,4 +26,11 @@ export interface Video {
   date: string;
   level?: string;   // mức độ (beginner, intermediate,...)
   Transcripts: Transcript[];
+  progress?: {
+    currentTranscriptIndex: number;
+    transcriptsCompleted: number;
+    totalScore: number;
+    completed: boolean;
+    totalTranscripts: number;
+  } | null;
 }
