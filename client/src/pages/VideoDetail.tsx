@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import Cookies from 'js-cookie';
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import Transcript from "../components/transcript/Transcript";
 import { getVideoById } from "../services/videoServices";
 import { getVideoProgress, updateVideoProgress } from "../services/progressService";
-import type { Video, VideoProgress } from "../types/video";
+import type { Video } from "../types/video";
 
 // Feedback type
 interface FeedbackItem {
@@ -34,19 +35,23 @@ export default function VideoDictation() {
     if (!id) return;
 
     const loadProgress = async () => {
-      try {
-        const progress = await getVideoProgress(parseInt(id));
-        if (progress) {
-          // Set current transcript index from saved progress
-          setCurrentIndex(progress.currentTranscriptIndex);
-          
-          // If there's a video and a current transcript, set the video time
-          if (videoRef.current && transcripts[progress.currentTranscriptIndex]) {
-            videoRef.current.currentTime = transcripts[progress.currentTranscriptIndex].start;
+      const token = Cookies.get('token');
+      // Only try to get progress if user is logged in
+      if (token) {
+        try {
+          const progress = await getVideoProgress(parseInt(id));
+          if (progress) {
+            // Set current transcript index from saved progress
+            setCurrentIndex(progress.currentTranscriptIndex);
+            
+            // If there's a video and a current transcript, set the video time
+            if (videoRef.current && transcripts[progress.currentTranscriptIndex]) {
+              videoRef.current.currentTime = transcripts[progress.currentTranscriptIndex].start;
+            }
           }
+        } catch (error) {
+          console.error('Error loading progress:', error);
         }
-      } catch (error) {
-        console.error('Error loading progress:', error);
       }
     };
 
@@ -79,14 +84,18 @@ export default function VideoDictation() {
   const saveProgress = async (transcriptScore: number) => {
     if (!id) return;
 
-    try {
-      await updateVideoProgress(
-        parseInt(id),
-        currentIndex + 1,
-        transcriptScore
-      );
-    } catch (error) {
-      console.error('Error saving progress:', error);
+    const token = Cookies.get('token');
+    // Only save progress if user is logged in
+    if (token) {
+      try {
+        await updateVideoProgress(
+          parseInt(id),
+          currentIndex + 1,
+          transcriptScore
+        );
+      } catch (error) {
+        console.error('Error saving progress:', error);
+      }
     }
   };
 

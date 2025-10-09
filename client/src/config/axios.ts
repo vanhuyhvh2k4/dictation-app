@@ -26,11 +26,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token is invalid or expired
-      Cookies.remove('token');
-      window.location.href = '/signin';
-    }
+    // We'll let the components handle 401 errors themselves
     return Promise.reject(error);
   }
 );
