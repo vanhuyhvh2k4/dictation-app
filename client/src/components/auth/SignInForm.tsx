@@ -1,14 +1,102 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
-import Button from "../ui/button/Button";
+import { signIn } from "../../services/authServices";
+import type { AuthSignIn } from "../../types/user";
+import Cookies from "js-cookie";
+
+interface FormErrors {
+  email?: string;
+  password?: string;
+}
 
 export default function SignInForm() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const [formData, setFormData] = useState<AuthSignIn>({
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const validateEmail = (email: string): string | undefined => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      return "Email không được để trống";
+    }
+    if (!emailRegex.test(email)) {
+      return "Email không hợp lệ";
+    }
+    return undefined;
+  };
+
+  const validatePassword = (password: string): string | undefined => {
+    if (!password) {
+      return "Mật khẩu không được để trống";
+    }
+    if (password.length < 6) {
+      return "Mật khẩu phải có ít nhất 6 ký tự";
+    }
+    return undefined;
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    newErrors.email = validateEmail(formData.email);
+    newErrors.password = validatePassword(formData.password);
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error !== undefined);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    // Clear error when user types
+    if (errors[name as keyof FormErrors]) {
+      setErrors({ ...errors, [name]: undefined });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      setMessage("⚠️ Vui lòng kiểm tra lại thông tin!");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const user = await signIn(formData);
+      
+      // Lưu token vào cookie
+      if (isChecked) {
+        // Nếu "Keep me logged in" được chọn, lưu token 7 ngày
+        Cookies.set('token', user.token, { expires: 7 });
+      } else {
+        // Nếu không, token sẽ hết hạn khi đóng browser
+        Cookies.set('token', user.token);
+      }
+
+      // Chuyển hướng đến trang home
+      navigate('/home');
+    } catch (error: any) {
+      console.error(error);
+      setMessage(error.response?.data?.message || "Đăng nhập thất bại!");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="flex flex-col flex-1">
       <div className="w-full max-w-md pt-10 mx-auto">
@@ -83,13 +171,23 @@ export default function SignInForm() {
                 </span>
               </div>
             </div>
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 <div>
                   <Label>
                     Email <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input placeholder="info@gmail.com" />
+                  <Input 
+                    type="email"
+                    name="email"
+                    placeholder="info@gmail.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    error={!!errors.email}
+                  />
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-error-500">{errors.email}</p>
+                  )}
                 </div>
                 <div>
                   <Label>
@@ -98,7 +196,11 @@ export default function SignInForm() {
                   <div className="relative">
                     <Input
                       type={showPassword ? "text" : "password"}
+                      name="password"
                       placeholder="Enter your password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      error={!!errors.password}
                     />
                     <span
                       onClick={() => setShowPassword(!showPassword)}
@@ -111,6 +213,9 @@ export default function SignInForm() {
                       )}
                     </span>
                   </div>
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-error-500">{errors.password}</p>
+                  )}
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -127,10 +232,25 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm">
-                    Sign in
-                  </Button>
+                  <button 
+                    type="submit"
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:opacity-70"
+                    disabled={loading}
+                  >
+                    {loading ? "Đang đăng nhập..." : "Sign in"}
+                  </button>
                 </div>
+
+                {/* Message */}
+                {message && (
+                  <p
+                    className={`text-center text-sm ${
+                      message.includes("thành công") ? "text-green-500" : "text-red-500"
+                    }`}
+                  >
+                    {message}
+                  </p>
+                )}
               </div>
             </form>
 
