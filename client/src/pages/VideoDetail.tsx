@@ -4,7 +4,8 @@ import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import Transcript from "../components/transcript/Transcript";
 import { getVideoById } from "../services/videoServices";
-import type { Video } from "../types/video";
+import { getVideoProgress, updateVideoProgress } from "../services/progressService";
+import type { Video, VideoProgress } from "../types/video";
 
 // Feedback type
 interface FeedbackItem {
@@ -18,7 +19,6 @@ export default function VideoDictation() {
   const { id } = useParams<{ id: string }>();
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
   const [answer, setAnswer] = useState<string>("");
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [feedback, setFeedback] = useState<FeedbackItem[] | null>(null);
@@ -28,6 +28,67 @@ export default function VideoDictation() {
 
   const transcripts = video?.Transcripts || [];
   const currentTranscript = transcripts[currentIndex];
+
+  // Load initial progress
+  useEffect(() => {
+    if (!id) return;
+
+    const loadProgress = async () => {
+      try {
+        const progress = await getVideoProgress(parseInt(id));
+        if (progress) {
+          // Set current transcript index from saved progress
+          setCurrentIndex(progress.currentTranscriptIndex);
+          
+          // If there's a video and a current transcript, set the video time
+          if (videoRef.current && transcripts[progress.currentTranscriptIndex]) {
+            videoRef.current.currentTime = transcripts[progress.currentTranscriptIndex].start;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading progress:', error);
+      }
+    };
+
+    loadProgress();
+  }, [id, transcripts]);
+
+  // Setup cleanup for page unload
+  useEffect(() => {
+    // Save progress when leaving the page
+    const handleBeforeUnload = () => {
+      if (isCorrect && score !== null) {
+        saveProgress(score);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      // Remove event listener
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      
+      // Save progress one last time
+      if (isCorrect && score !== null) {
+        saveProgress(score);
+      }
+    };
+  }, [isCorrect, score]);
+
+  // Save video progress
+  const saveProgress = async (transcriptScore: number) => {
+    if (!id) return;
+
+    try {
+      await updateVideoProgress(
+        parseInt(id),
+        currentIndex + 1,
+        transcriptScore
+      );
+    } catch (error) {
+      console.error('Error saving progress:', error);
+    }
+  };
 
   // Auto stop when reaching the end of transcript
   const handleTimeUpdate = () => {
@@ -81,6 +142,11 @@ export default function VideoDictation() {
     setFeedback(result);
     setScore(scorePercent);
     setIsCorrect(scorePercent === 100);
+    
+    // If answer is correct, save progress
+    if (scorePercent === 100) {
+      saveProgress(scorePercent);
+    }
     if (scorePercent !== 100) setSkipped(false);
   };
 
@@ -98,10 +164,16 @@ export default function VideoDictation() {
     setScore(0);
     setIsCorrect(false);
     setSkipped(true);
+    saveProgress(0);
   };
 
   const handleNext = () => {
     if (currentIndex < transcripts.length - 1) {
+      // Save progress before moving to next transcript
+      if (isCorrect && score !== null) {
+        // saveProgress(score);
+      }
+      
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       setAnswer("");
@@ -109,11 +181,16 @@ export default function VideoDictation() {
       setScore(null);
       setIsCorrect(false);
 
-      if (videoRef.current)
+      if (videoRef.current) {
         videoRef.current.currentTime = transcripts[nextIndex].start;
-      videoRef.current?.play();
+        videoRef.current.play();
+      }
     } else {
-      alert("🎉 You’ve completed all transcripts!");
+      // Save final progress for the last transcript
+      if (isCorrect && score !== null) {
+        saveProgress(score);
+      }
+      alert("🎉 You've completed all transcripts!");
     }
   };
 
@@ -174,9 +251,8 @@ export default function VideoDictation() {
               <button
                 className="px-3 py-1 text-sm bg-red-600 text-white rounded"
                 onClick={() => {
-                  if (videoRef.current) {
-                    videoRef.current.currentTime =
-                      currentTranscript?.start || 0;
+                  if (videoRef.current && currentTranscript) {
+                    videoRef.current.currentTime = currentTranscript.start;
                     videoRef.current.play();
                   }
                 }}
