@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import models from "../models/index.js";
 
-const { Video, Transcript } = models;
+const { Video, Transcript, UserProgress } = models;
 const BUCKET_NAME = "dictation_app";
 
 // Supabase client - upload từ server, dùng SERVICE_ROLE_KEY
@@ -13,36 +13,95 @@ const supabase = createClient(
 // Lấy danh sách video
 export const getListVideos = async (req, res) => {
   try {
+    // Lấy userId từ auth middleware (nếu có)
+    const userId = req.userId;
+    console.log('Current userId:', userId);
+
+    // Cấu hình include cho query
+    const includes = [
+      {
+        model: Transcript,
+        attributes: ['id']
+      }
+    ];
+
+    // Chỉ thêm UserProgress vào query nếu có userId
+    if (userId) {
+      includes.push({
+        model: UserProgress,
+        where: { userId },
+        required: false, // LEFT JOIN để lấy cả video chưa có progress
+        attributes: [
+          'id',
+          'userId',
+          'videoId',
+          'currentTranscriptIndex',
+          'transcriptsCompleted',
+          'totalScore',
+          'completed'
+        ]
+      });
+    }
+
+    console.log('Query includes:', JSON.stringify(includes, null, 2));
+
+    // Find all videos with optional user progress
     const videos = await Video.findAll({
       order: [["createdAt", "DESC"]],
+      include: includes,
+      logging: console.log // Log the actual SQL query
     });
+
     const listVideos = await Promise.all(
-    videos.map(async (video) => {
-      try {
-         const plainVideo = video.get({ plain: true }); // convert sạch
+      videos.map(async (video) => {
+        try {
+          const plainVideo = video.get({ plain: true });
 
-        // Tạo signed URL tạm thời
-        const { data: signedVideoData, error: videoError } = await supabase.storage
-          .from(`${BUCKET_NAME}/videos`)
-          .createSignedUrl(video.url, 60 * 60); // 1 giờ
+          // Tạo signed URL tạm thời
+          const { data: signedVideoData, error: videoError } = await supabase.storage
+            .from(`${BUCKET_NAME}/videos`)
+            .createSignedUrl(video.url, 60 * 60); // 1 giờ
+            
+          if (videoError) {
+            throw videoError;
+          }
+
+          const { data: signedThumbnailData, error: thumbnailError } = await supabase.storage
+            .from(`${BUCKET_NAME}/thumbnails`)
+            .createSignedUrl(video.thumbnail, 60 * 60); // 1 giờ
+            
+          if (thumbnailError) {
+            throw thumbnailError;
+          }
+
+          // Format progress data
+          const totalTranscripts = plainVideo.Transcripts?.length || 0;
+          let progressData = null;
+
+          console.log('Processing video:', plainVideo.id);
+          console.log('UserProgresses:', plainVideo.UserProgresses);
           
-        if (videoError) {
-          throw videoError;
-        }
+          // Chỉ xử lý progress nếu có UserProgresses và userId
+          if (userId && plainVideo.UserProgresses?.length > 0) {
+            const progress = plainVideo.UserProgresses[0];
+            console.log('Found progress for video:', plainVideo.id, progress);
+            progressData = {
+              currentTranscriptIndex: progress.currentTranscriptIndex,
+              transcriptsCompleted: progress.transcriptsCompleted,
+              totalScore: progress.totalScore,
+              completed: progress.completed,
+              totalTranscripts
+            };
+          }
 
-        const { data: signedThumbnailData, error: thumbnailError } = await supabase.storage
-          .from(`${BUCKET_NAME}/thumbnails`)
-          .createSignedUrl(video.thumbnail, 60 * 60); // 1 giờ
-          
-        if (thumbnailError) {
-          throw thumbnailError;
-        }
-
-        return {
-          ...plainVideo,
-          url: signedVideoData?.signedUrl, // gán signedUrl
-          thumbnail: signedThumbnailData?.signedUrl,
-        };
+          return {
+            ...plainVideo,
+            url: signedVideoData?.signedUrl,
+            thumbnail: signedThumbnailData?.signedUrl,
+            progress: progressData,
+            Transcripts: undefined, // Remove transcripts from response
+            UserProgresses: undefined // Remove raw progress data
+          };
       } catch (err) {
         // Trường hợp lỗi 1 video => vẫn trả video nhưng kèm cờ báo lỗi
         return {

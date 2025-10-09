@@ -11,7 +11,9 @@ const upload = multer({ storage: multer.memoryStorage() }); // giữ file trong 
 // GET /api/video/daily
 router.get("/daily", videoCtrl.getDailyVideo);
 
-router.get("/", videoCtrl.getListVideos);
+import optionalAuth from '../middlewares/optionalAuth.js';
+
+router.get("/", optionalAuth, videoCtrl.getListVideos);
 
 router.get("/:id", videoCtrl.getVideoById);
 
