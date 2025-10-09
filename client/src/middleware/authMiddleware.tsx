@@ -26,3 +26,9 @@ export const PublicRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   return <>{children}</>;
 };
+
+// Route that allows both authenticated and non-authenticated users
+export const OptionalAuthRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  // No authentication check needed
+  return <>{children}</>;
+};
