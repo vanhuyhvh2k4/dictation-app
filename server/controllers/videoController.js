@@ -15,7 +15,15 @@ export const getListVideos = async (req, res) => {
   try {
     // Lấy userId từ auth middleware (nếu có)
     const userId = req.userId;
+    const { level } = req.query;
     console.log('Current userId:', userId);
+    console.log('Query level:', level);
+
+    // Cấu hình where condition
+    const whereCondition = {};
+    if (level) {
+      whereCondition.level = level;
+    }
 
     // Cấu hình include cho query
     const includes = [
@@ -45,8 +53,9 @@ export const getListVideos = async (req, res) => {
 
     console.log('Query includes:', JSON.stringify(includes, null, 2));
 
-    // Find all videos with optional user progress
+    // Find all videos with optional user progress and level filter
     const videos = await Video.findAll({
+      where: whereCondition,
       order: [["createdAt", "DESC"]],
       include: includes,
       logging: console.log // Log the actual SQL query
