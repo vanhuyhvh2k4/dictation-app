@@ -3,10 +3,14 @@ import axiosInstance from "../config/axios";
 
 const API_PATH = "/videos";
 
-// Lấy tất cả videos
-export const getVideos = async (): Promise<Video[]> => {
+// Lấy videos với optional filter theo level
+export const getVideos = async (level?: string): Promise<Video[]> => {
   try {
-    const response = await axiosInstance.get<Video[]>(API_PATH);
+    const response = await axiosInstance.get<Video[]>(API_PATH, {
+      params: {
+        level: level
+      }
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching videos:", error);
