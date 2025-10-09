@@ -88,7 +88,7 @@ export const importSubtitle = async (req, res) => {
     // build records mới
     const records = segments.map((s, idx) => ({
       videoId: Number(videoId),
-      sentenceIndex: idx + 1,
+      sentenceIndex: idx,
       text: s.text,
       start: Number(s.start),
       end: Number(s.end)
