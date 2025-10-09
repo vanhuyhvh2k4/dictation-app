@@ -1,103 +1,159 @@
-# Dictation App API Documentation
+# Dictation App
 
-## Base URL
+A full-stack web application for English dictation practice and learning, built with React, TypeScript, and Node.js.
+
+## Project Structure
+
+```
+├── client/          # Frontend React application
+│   ├── src/
+│   │   ├── components/   # Reusable UI components
+│   │   ├── pages/       # Page components
+│   │   ├── context/     # React context providers
+│   │   ├── hooks/       # Custom React hooks
+│   │   └── api/         # API integration
+│   └── public/          # Static assets
+│
+└── server/          # Backend Node.js application
+    ├── controllers/    # Request handlers
+    ├── models/        # Database models
+    ├── routes/        # API routes
+    ├── middlewares/   # Express middlewares
+    └── utils/         # Utility functions
+```
+
+## Features
+
+- 🎯 Interactive English dictation exercises
+- 📊 Progress tracking and scoring system
+- 🎥 Video-based learning materials
+- 🔐 User authentication and profile management
+- 📝 Transcript-based learning progress
+- 📈 Performance analytics and statistics
+
+## Technology Stack
+
+### Frontend
+- React 19
+- TypeScript
+- Vite
+- TailwindCSS
+- React Router v7
+- Axios
+- ApexCharts for data visualization
+- Full Calendar integration
+- React DnD for drag-and-drop functionality
+
+### Backend
+- Node.js
+- Express.js
+- Sequelize ORM
+- MySQL
+- JWT Authentication
+- OpenAI Integration
+- FFmpeg for media processing
+
+## API Documentation
+
+### Base URL
 ```
 http://localhost:3000/api
 ```
 
-## Authentication
-Most endpoints require authentication using JWT tokens. Include the token in the Authorization header:
+### Authentication
+Most endpoints require authentication using JWT tokens:
 ```
 Authorization: Bearer YOUR_JWT_TOKEN
 ```
 
-## API Endpoints
+### Key Endpoints
 
-### Authentication
-
-#### Sign Up
+#### Authentication
 ```http
-POST /auth/register
-Content-Type: application/json
-
-{
-  "name": "string",
-  "email": "string",
-  "password": "string"
-}
-
-Response:
-{
-  "user": {
-    "id": "number",
-    "name": "string",
-    "email": "string",
-    "token": "string"
-  }
-}
+POST /auth/register   # User registration
+POST /auth/login      # User login
 ```
 
-#### Sign In
+#### Video Progress
 ```http
-POST /auth/login
-Content-Type: application/json
+GET /progress/:videoId    # Get progress for a video
+POST /progress/:videoId   # Update progress
 
+Request body:
 {
-  "email": "string",
-  "password": "string"
+  "currentTranscriptIndex": number,
+  "transcriptScore": number
 }
-
-Response:
-{
-  "user": {
-    "id": "number",
-    "name": "string",
-    "email": "string",
-    "token": "string"
-  }
-}
-```
-
-### Video Progress Tracking
-
-#### Update Video Progress
-```http
-POST /progress/:videoId
-Authorization: Bearer token
-Content-Type: application/json
-
-{
-  "currentTime": number,    // Current time in seconds
-  "completed": boolean      // Optional: mark as completed
-}
-
-Response:
-{
-  "message": "Progress updated successfully",
-  "data": {
-    "id": number,
-    "userId": number,
-    "videoId": number,
-    "currentTime": number,
-    "completed": boolean,
-    "score": number|null,
-    "lastWatched": string
-  }
-}
-```
-
-#### Get Progress for a Specific Video
-```http
-GET /progress/:videoId
-Authorization: Bearer token
 
 Response:
 {
   "data": {
-    "currentTime": number,
+    "currentTranscriptIndex": number,
+    "transcriptsCompleted": number,
+    "totalScore": number,
     "completed": boolean,
-    "score": number|null,
-    "video": {
+    "totalTranscripts": number
+  }
+}
+```
+
+## Getting Started
+
+### Prerequisites
+- Node.js (v16 or higher)
+- MySQL
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/vanhuyhvh2k4/dictation-app.git
+cd dictation-app
+```
+
+2. Install dependencies
+```bash
+# Install server dependencies
+cd server
+npm install
+
+# Install client dependencies
+cd ../client
+npm install
+```
+
+### Configuration
+
+1. Create a .env file in the server directory with:
+```env
+DB_HOST=your_database_host
+DB_USER=your_database_user
+DB_PASS=your_database_password
+DB_NAME=your_database_name
+JWT_SECRET=your_jwt_secret
+OPENAI_API_KEY=your_openai_api_key
+```
+
+### Running the Application
+
+1. Start the server
+```bash
+cd server
+npm run dev
+```
+
+2. Start the client
+```bash
+cd client
+npm run dev
+```
+
+The application will be available at `http://localhost:5173`
+
+## License
+
+This project is licensed under the MIT License
       "title": "string",
       "duration": number,
       "thumbnail": "string"

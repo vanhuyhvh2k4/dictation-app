@@ -1,46 +1,73 @@
 import models from "../models/index.js";
-const { UserProgress, Video } = models;
+const { UserProgress, Video, Transcript } = models;
 
-// Cập nhật tiến độ xem video
+// Cập nhật tiến độ của video và điểm số
 export const updateVideoProgress = async (req, res) => {
     try {
         const { videoId } = req.params;
-        const userId = req.userId; // From authMiddleware
-        const { currentTime, completed } = req.body;
+        const userId = req.userId;
+        const { currentTranscriptIndex, transcriptScore } = req.body;
 
-        // Validate input
-        if (typeof currentTime !== 'number' || currentTime < 0) {
-            return res.status(400).json({ message: 'Current time must be a non-negative number' });
+        const video = await Video.findByPk(videoId, {
+            include: [{
+                model: Transcript,
+                attributes: ['id']
+            }]
+        });
+
+        if (!video) {
+            return res.status(404).json({ message: "Video not found" });
         }
 
-        // Find or create progress record
+        const totalTranscripts = video.Transcripts.length;
+
+        if (currentTranscriptIndex >= totalTranscripts) {
+            return res.status(400).json({ 
+                message: "Current transcript index exceeds total transcripts" 
+            });
+        }
+
+        // Find or create a progress record
         const [progress, created] = await UserProgress.findOrCreate({
             where: { userId, videoId },
             defaults: {
-                currentTime: 0,
-                completed: false,
-                score: null
+                currentTranscriptIndex: 0,
+                transcriptsCompleted: 0,
+                totalScore: 0,
+                completed: false
             }
         });
 
-        // Update progress
+        // Update transcripts completed if moving to next transcript
+        let transcriptsCompleted = progress.transcriptsCompleted;
+        if (currentTranscriptIndex > progress.currentTranscriptIndex) {
+            transcriptsCompleted = currentTranscriptIndex;
+        }
+
+        // Calculate total score
+        const newTotalScore = progress.totalScore + (transcriptScore || 0);
+
+        // Check if all transcripts are completed
+        const completed = transcriptsCompleted >= totalTranscripts - 1;
+
+        // Update the progress
         await progress.update({
-            currentTime,
-            completed: completed || progress.completed,
-            lastWatched: new Date()
+            currentTranscriptIndex,
+            transcriptsCompleted,
+            totalScore: newTotalScore,
+            completed,
+            updatedAt: new Date()
         });
 
         res.json({
-            message: "Progress updated successfully",
-            data: progress
+            data: {
+                ...progress.toJSON(),
+                totalTranscripts
+            }
         });
-
     } catch (error) {
         console.error('Error updating video progress:', error);
-        res.status(500).json({
-            message: "Error updating video progress",
-            error: error.message
-        });
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
@@ -48,28 +75,38 @@ export const updateVideoProgress = async (req, res) => {
 export const getVideoProgress = async (req, res) => {
     try {
         const { videoId } = req.params;
-        const userId = req.userId; // From authMiddleware
+        const userId = req.userId;
 
+        // Get progress with video info and total transcripts count
         const progress = await UserProgress.findOne({
             where: { userId, videoId },
             include: [{
                 model: Video,
-                attributes: ['title', 'duration', 'thumbnail']
+                attributes: ['title'],
             }]
         });
 
         if (!progress) {
             return res.json({
                 data: {
-                    currentTime: 0,
+                    currentTranscriptIndex: 0,
                     completed: false,
-                    score: null,
-                    video: null
+                    totalScore: 0,
+                    transcriptsCompleted: 0,
+                    totalTranscripts: 0
                 }
             });
         }
 
-        res.json({ data: progress });
+        // Add total transcripts count to response
+        const totalTranscripts = progress.Video?.Transcripts?.length || 0;
+
+        res.json({
+            data: {
+                ...progress.toJSON(),
+                totalTranscripts
+            }
+        });
 
     } catch (error) {
         console.error('Error getting video progress:', error);
@@ -91,7 +128,7 @@ export const getAllUserProgress = async (req, res) => {
                 model: Video,
                 attributes: ['title', 'duration', 'thumbnail']
             }],
-            order: [['lastWatched', 'DESC']] // Sắp xếp theo thời gian xem gần nhất
+            order: [['lastUpdated', 'DESC']] // Sắp xếp theo thời gian cập nhật gần nhất
         });
 
         res.json({ data: progress });
