@@ -4,16 +4,13 @@ import Cookies from 'js-cookie';
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import Transcript from "../components/transcript/Transcript";
+import { BreadcrumbNav } from "../components/video/BreadcrumbNav";
+import { VideoPlayer } from "../components/video/VideoPlayer";
+import { DictationPanel } from "../components/video/DictationPanel";
 import { getVideoById } from "../services/videoServices";
 import { getVideoProgress, updateVideoProgress } from "../services/progressService";
 import type { Video } from "../types/video";
-
-// Feedback type
-interface FeedbackItem {
-  word: string;
-  correct: boolean;
-  userWord?: string;
-}
+import type { FeedbackItem } from "../types/feedback";
 
 export default function VideoDictation() {
   const [video, setVideo] = useState<Video | null>(null);
@@ -119,6 +116,13 @@ export default function VideoDictation() {
     ) {
       // Quay lại đầu transcript
       videoRef.current.currentTime = currentTranscript.start;
+    }
+  };
+
+  const handlePlayCurrentTranscript = () => {
+    if (videoRef.current && currentTranscript) {
+      videoRef.current.currentTime = currentTranscript.start;
+      videoRef.current.play();
     }
   };
 
@@ -228,27 +232,7 @@ export default function VideoDictation() {
   return (
     <div className="min-h-screen bg-white text-gray-800">
       <Header />
-      <div className="py-3">
-        <nav className="max-w-6xl mx-auto px-4">
-          <ol className="flex items-center space-x-2 text-sm">
-            <li>
-              <a href="/" className="text-gray-600 hover:text-red-600">All topics</a>
-            </li>
-            <li>
-              <span className="text-gray-400">/</span>
-            </li>
-            <li>
-              <a href="/stories" className="text-gray-600 hover:text-red-600">Stories for Kids</a>
-            </li>
-            <li>
-              <span className="text-gray-400">/</span>
-            </li>
-            <li>
-              <span className="text-red-600">{video?.title || "Loading..."}</span>
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <BreadcrumbNav title={video?.title} />
       <main className="max-w-6xl mx-auto px-4 py-8">
         {/* Tab Headers */}
         <div className="flex border-b mb-6">
@@ -276,129 +260,31 @@ export default function VideoDictation() {
 
         {/* Tab Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Video - Always visible */}
-          <div className="rounded-xl overflow-hidden shadow border flex flex-col h-[400px]">
-            {video && (
-              <div className="flex-1">
-                <video
-                  ref={videoRef}
-                  width="100%"
-                  height="100%"
-                  className="h-full object-cover"
-                  controls
-                  onTimeUpdate={handleTimeUpdate}
-                  onPlay={handlePlayVideo}
-                >
-                  <source src={`${video.url}`} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            )}
-            <div className="p-4 bg-white">
-              <h2 className="text-lg font-semibold">{video?.title}</h2>
-              <p className="text-sm text-gray-500">
-                Vocab level: {video?.level}
-              </p>
-            </div>
-          </div>
+          <VideoPlayer
+            video={video}
+            videoRef={videoRef}
+            onTimeUpdate={handleTimeUpdate}
+            onPlay={handlePlayVideo}
+          />
 
           {/* Right Panel - Changes based on active tab */}
           <div className="border rounded-xl shadow h-[400px] flex flex-col">
             {activeTab === 'dictation' ? (
-              <div className="p-4 flex flex-col gap-4 h-full">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-1 text-sm bg-red-100 text-red-600 rounded">
-                    {currentIndex + 1} / {transcripts.length}
-                  </span>
-                  <button
-                    className="px-3 py-1 text-sm bg-red-600 text-white rounded"
-                    onClick={() => {
-                      if (videoRef.current && currentTranscript) {
-                        videoRef.current.currentTime = currentTranscript.start;
-                        videoRef.current.play();
-                      }
-                    }}
-                  >
-                    ▶ Play
-                  </button>
-                </div>
-
-                <textarea
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-600"
-                  rows={3}
-                  placeholder="Type what you hear..."
-                  minLength={1}
-                  required
-                />
-                <button
-                  onClick={handleSkip}
-                  className="px-4 py-2 ml-auto bg-gray-500 text-white rounded"
-                >
-                  Skip
-                </button>
-
-                {feedback && (
-                  <div className="text-sm">
-                    {!isCorrect && !skipped ? (
-                      <>
-                        <p className="mb-2 font-medium">
-                          Score: <span className="text-blue-600">{score}%</span>
-                        </p>
-                        <p className="flex flex-wrap gap-1">
-                          {feedback.map((f, idx) => (
-                            <span
-                              key={idx}
-                              className={`px-1 rounded ${
-                                f.correct
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-red-100 text-red-700"
-                              }`}
-                            >
-                              {f.word}
-                            </span>
-                          ))}
-                        </p>
-                      </>
-                    ) : (
-                      <div className="space-y-3">
-                        {isCorrect ? (
-                          <p className="text-green-600 font-semibold">
-                            ✅ You are correct!
-                          </p>
-                        ) : (
-                          <p className="text-yellow-600 font-semibold">
-                            ⏭️ You skipped this one
-                          </p>
-                        )}
-                        {currentTranscript?.translation && (
-                          <p className="text-gray-700">
-                            {currentTranscript.translation}
-                          </p>
-                        )}
-                        <p className="text-sm text-gray-600">
-                          {currentTranscript?.pronunciation ||
-                            currentTranscript?.text}
-                        </p>
-                        <button
-                          onClick={handleNext}
-                          className="px-4 py-2 bg-green-500 text-white rounded shadow hover:bg-green-600"
-                        >
-                          Next →
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <button
-                  onClick={handleCheckAnswer}
-                  className="px-4 py-2 bg-red-600 text-white rounded"
-                >
-                  Submit
-                </button>
-              </div>
+              <DictationPanel
+                currentIndex={currentIndex}
+                transcripts={transcripts}
+                currentTranscript={currentTranscript}
+                answer={answer}
+                feedback={feedback}
+                score={score}
+                isCorrect={isCorrect}
+                skipped={skipped}
+                onAnswerChange={setAnswer}
+                onPlay={handlePlayCurrentTranscript}
+                onSkip={handleSkip}
+                onCheck={handleCheckAnswer}
+                onNext={handleNext}
+              />
             ) : (
               <div className="p-4 h-full overflow-y-auto">
                 <Transcript transcripts={transcripts} currentIndex={currentIndex} />
