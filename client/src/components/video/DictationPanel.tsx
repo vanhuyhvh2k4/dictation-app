@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { FeedbackItem } from '../../types/feedback';
 import type { Transcript } from '../../types/transcript';
 
@@ -23,7 +24,6 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
   currentTranscript,
   answer,
   feedback,
-  score,
   isCorrect,
   skipped,
   onAnswerChange,
@@ -32,6 +32,8 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
   onCheck,
   onNext,
 }) => {
+  const [showAnswer, setShowAnswer] = useState(false);
+
   return (
     <div className="p-4 flex flex-col gap-4 h-full">
       <div className="flex items-center gap-2">
@@ -87,23 +89,36 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
         <div className="text-sm">
           {!isCorrect && !skipped ? (
             <>
-              <p className="mb-2 font-medium">
-                Score: <span className="text-blue-600">{score}%</span>
-              </p>
-              <p className="flex flex-wrap gap-1">
-                {feedback.map((f, idx) => (
-                  <span
-                    key={idx}
-                    className={`px-1 rounded ${
-                      f.correct
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {f.word}
-                  </span>
-                ))}
-              </p>
+              <div className="space-y-3">
+                <p className="flex flex-wrap gap-1">
+                  {feedback.map((f, idx) => (
+                    <span
+                      key={idx}
+                      className={`px-1 rounded ${
+                        f.correct ? "bg-green-100 text-green-700" : ""
+                      }`}
+                    >
+                      {f.correct ? f.word : showAnswer ? (
+                        <span className="px-1 rounded text-red-600 bg-red-100">{f.word}</span>
+                      ) : (
+                        <span className="px-1 rounded text-red-600 bg-red-100">{'*'.repeat(f.word.length)}</span>
+                      )}
+                    </span>
+                  ))}
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="show-answer"
+                    checked={showAnswer}
+                    onChange={(e) => setShowAnswer(e.target.checked)}
+                    className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                  />
+                  <label htmlFor="show-answer" className="text-sm text-gray-600">
+                    Show full answer
+                  </label>
+                </div>
+              </div>
             </>
           ) : (
             <div className="space-y-3">
