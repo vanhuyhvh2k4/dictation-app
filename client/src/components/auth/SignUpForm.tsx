@@ -109,7 +109,7 @@ export default function SignUpForm() {
       // Lưu token vào cookie với thời hạn 7 ngày
       Cookies.set('token', user.token, { expires: 7 });
       // Chuyển hướng đến trang home
-      navigate('/home');
+      navigate('/');
     } catch (error: any) {
       console.error(error);
       setMessage(error.response?.data?.message || "Đăng ký thất bại!");

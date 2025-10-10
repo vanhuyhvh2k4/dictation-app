@@ -29,38 +29,38 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Protected Routes */}
-        <Route index path="/home" element={<OptionalAuthRoute><Home /></OptionalAuthRoute>} />
+        <Route index path="/" element={<OptionalAuthRoute><Home /></OptionalAuthRoute>} />
         <Route path="/videos/:id" element={<OptionalAuthRoute><VideoDetail /></OptionalAuthRoute>} />
         <Route path="/words" element={<OptionalAuthRoute><WordList /></OptionalAuthRoute>} />
         <Route path="/upload" element={<OptionalAuthRoute><VideoUpload /></OptionalAuthRoute>} />
 
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-            <Route path="/" element={<HomeDashboard />} />
+            <Route path="/admin/dashboard" element={<HomeDashboard />} />
 
-            <Route path="/add-lesson" element={<AddLesson />} />
+            <Route path="/admin/add-lesson" element={<AddLesson />} />
 
             {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/blank" element={<Blank />} />
+            <Route path="/admin/profile" element={<UserProfiles />} />
+            <Route path="/admin/calendar" element={<Calendar />} />
+            <Route path="/admin/blank" element={<Blank />} />
 
             {/* Forms */}
-            <Route path="/form-elements" element={<FormElements />} />
+            <Route path="/admin/form-elements" element={<FormElements />} />
 
             {/* Tables */}
-            <Route path="/basic-tables" element={<BasicTables />} />
+            <Route path="/admin/basic-tables" element={<BasicTables />} />
 
             {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} />
+            <Route path="/admin/alerts" element={<Alerts />} />
+            <Route path="/admin/avatars" element={<Avatars />} />
+            <Route path="/admin/badge" element={<Badges />} />
+            <Route path="/admin/buttons" element={<Buttons />} />
+            <Route path="/admin/images" element={<Images />} />
+            <Route path="/admin/videos" element={<Videos />} />
 
             {/* Charts */}
-            <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
+            <Route path="/admin/line-chart" element={<LineChart />} />
+            <Route path="/admin/bar-chart" element={<BarChart />} />
           </Route>
 
           {/* Auth Layout - Public Routes */}

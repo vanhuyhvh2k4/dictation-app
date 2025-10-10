@@ -89,7 +89,7 @@ export default function SignInForm() {
       }
 
       // Chuyển hướng đến trang home
-      navigate('/home');
+      navigate('/');
     } catch (error: any) {
       console.error(error);
       setMessage(error.response?.data?.message || "Đăng nhập thất bại!");
