@@ -26,6 +26,7 @@ export default function VideoDictation() {
   const [score, setScore] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean>(false);
   const [skipped, setSkipped] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState<'dictation' | 'transcript'>('dictation');
 
   const transcripts = video?.Transcripts || [];
   const currentTranscript = transcripts[currentIndex];
@@ -249,8 +250,33 @@ export default function VideoDictation() {
         </nav>
       </div>
       <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* Tab Headers */}
+        <div className="flex border-b mb-6">
+          <button
+            onClick={() => setActiveTab('dictation')}
+            className={`px-4 py-2 font-medium ${
+              activeTab === 'dictation'
+                ? 'text-red-600 border-b-2 border-red-600'
+                : 'text-gray-500 hover:text-red-600'
+            }`}
+          >
+            Dictation
+          </button>
+          <button
+            onClick={() => setActiveTab('transcript')}
+            className={`px-4 py-2 font-medium ${
+              activeTab === 'transcript'
+                ? 'text-red-600 border-b-2 border-red-600'
+                : 'text-gray-500 hover:text-red-600'
+            }`}
+          >
+            Full transcript
+          </button>
+        </div>
+
+        {/* Tab Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Video */}
+          {/* Video - Always visible */}
           <div className="rounded-xl overflow-hidden shadow border">
             {video && (
               <video
@@ -272,105 +298,109 @@ export default function VideoDictation() {
             </div>
           </div>
 
-          {/* Dictation Input */}
-          <div className="p-4 border rounded-xl shadow flex flex-col gap-4">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-1 text-sm bg-red-100 text-red-600 rounded">
-                {currentIndex + 1} / {transcripts.length}
-              </span>
-              <button
-                className="px-3 py-1 text-sm bg-red-600 text-white rounded"
-                onClick={() => {
-                  if (videoRef.current && currentTranscript) {
-                    videoRef.current.currentTime = currentTranscript.start;
-                    videoRef.current.play();
-                  }
-                }}
-              >
-                ▶ Play
-              </button>
-            </div>
+          {/* Right Panel - Changes based on active tab */}
+          <div className="border rounded-xl shadow">
+            {activeTab === 'dictation' ? (
+              <div className="p-4 flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 text-sm bg-red-100 text-red-600 rounded">
+                    {currentIndex + 1} / {transcripts.length}
+                  </span>
+                  <button
+                    className="px-3 py-1 text-sm bg-red-600 text-white rounded"
+                    onClick={() => {
+                      if (videoRef.current && currentTranscript) {
+                        videoRef.current.currentTime = currentTranscript.start;
+                        videoRef.current.play();
+                      }
+                    }}
+                  >
+                    ▶ Play
+                  </button>
+                </div>
 
-            <textarea
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-600"
-              rows={3}
-              placeholder="Type what you hear..."
-              minLength={1}
-              required
-            />
-            <button
-              onClick={handleSkip}
-              className="px-4 py-2 ml-auto bg-gray-500 text-white rounded"
-            >
-              Skip
-            </button>
+                <textarea
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-600"
+                  rows={3}
+                  placeholder="Type what you hear..."
+                  minLength={1}
+                  required
+                />
+                <button
+                  onClick={handleSkip}
+                  className="px-4 py-2 ml-auto bg-gray-500 text-white rounded"
+                >
+                  Skip
+                </button>
 
-            {feedback && (
-              <div className="text-sm">
-                {!isCorrect && !skipped ? (
-                  <>
-                    <p className="mb-2 font-medium">
-                      Score: <span className="text-blue-600">{score}%</span>
-                    </p>
-                    <p className="flex flex-wrap gap-1">
-                      {feedback.map((f, idx) => (
-                        <span
-                          key={idx}
-                          className={`px-1 rounded ${
-                            f.correct
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {f.word}
-                        </span>
-                      ))}
-                    </p>
-                  </>
-                ) : (
-                  <div className="space-y-3">
-                    {isCorrect ? (
-                      <p className="text-green-600 font-semibold">
-                        ✅ You are correct!
-                      </p>
+                {feedback && (
+                  <div className="text-sm">
+                    {!isCorrect && !skipped ? (
+                      <>
+                        <p className="mb-2 font-medium">
+                          Score: <span className="text-blue-600">{score}%</span>
+                        </p>
+                        <p className="flex flex-wrap gap-1">
+                          {feedback.map((f, idx) => (
+                            <span
+                              key={idx}
+                              className={`px-1 rounded ${
+                                f.correct
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {f.word}
+                            </span>
+                          ))}
+                        </p>
+                      </>
                     ) : (
-                      <p className="text-yellow-600 font-semibold">
-                        ⏭️ You skipped this one
-                      </p>
+                      <div className="space-y-3">
+                        {isCorrect ? (
+                          <p className="text-green-600 font-semibold">
+                            ✅ You are correct!
+                          </p>
+                        ) : (
+                          <p className="text-yellow-600 font-semibold">
+                            ⏭️ You skipped this one
+                          </p>
+                        )}
+                        {currentTranscript?.translation && (
+                          <p className="text-gray-700">
+                            {currentTranscript.translation}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-600">
+                          {currentTranscript?.pronunciation ||
+                            currentTranscript?.text}
+                        </p>
+                        <button
+                          onClick={handleNext}
+                          className="px-4 py-2 bg-green-500 text-white rounded shadow hover:bg-green-600"
+                        >
+                          Next →
+                        </button>
+                      </div>
                     )}
-                    {currentTranscript?.translation && (
-                      <p className="text-gray-700">
-                        {currentTranscript.translation}
-                      </p>
-                    )}
-                    <p className="text-sm text-gray-600">
-                      {currentTranscript?.pronunciation ||
-                        currentTranscript?.text}
-                    </p>
-                    <button
-                      onClick={handleNext}
-                      className="px-4 py-2 bg-green-500 text-white rounded shadow hover:bg-green-600"
-                    >
-                      Next →
-                    </button>
                   </div>
                 )}
+
+                <button
+                  onClick={handleCheckAnswer}
+                  className="px-4 py-2 bg-red-600 text-white rounded"
+                >
+                  Submit
+                </button>
+              </div>
+            ) : (
+              <div className="h-[500px] overflow-y-auto p-4">
+                <Transcript transcripts={transcripts} currentIndex={currentIndex} />
               </div>
             )}
-
-            <button
-              onClick={handleCheckAnswer}
-              className="px-4 py-2 bg-red-600 text-white rounded"
-            >
-              Submit
-            </button>
           </div>
-        </div>
-
-        <div className="mt-10">
-          <Transcript transcripts={transcripts} currentIndex={currentIndex} />
         </div>
       </main>
       <Footer />
