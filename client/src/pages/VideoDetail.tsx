@@ -277,20 +277,24 @@ export default function VideoDictation() {
         {/* Tab Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Video - Always visible */}
-          <div className="rounded-xl overflow-hidden shadow border">
+          <div className="rounded-xl overflow-hidden shadow border flex flex-col h-[400px]">
             {video && (
-              <video
-                ref={videoRef}
-                width="100%"
-                controls
-                onTimeUpdate={handleTimeUpdate}
-                onPlay={handlePlayVideo}
-              >
-                <source src={`${video.url}`} type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
+              <div className="flex-1">
+                <video
+                  ref={videoRef}
+                  width="100%"
+                  height="100%"
+                  className="h-full object-cover"
+                  controls
+                  onTimeUpdate={handleTimeUpdate}
+                  onPlay={handlePlayVideo}
+                >
+                  <source src={`${video.url}`} type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
             )}
-            <div className="p-4">
+            <div className="p-4 bg-white">
               <h2 className="text-lg font-semibold">{video?.title}</h2>
               <p className="text-sm text-gray-500">
                 Vocab level: {video?.level}
@@ -299,9 +303,9 @@ export default function VideoDictation() {
           </div>
 
           {/* Right Panel - Changes based on active tab */}
-          <div className="border rounded-xl shadow">
+          <div className="border rounded-xl shadow h-[400px] flex flex-col">
             {activeTab === 'dictation' ? (
-              <div className="p-4 flex flex-col gap-4">
+              <div className="p-4 flex flex-col gap-4 h-full">
                 <div className="flex items-center gap-2">
                   <span className="px-2 py-1 text-sm bg-red-100 text-red-600 rounded">
                     {currentIndex + 1} / {transcripts.length}
@@ -396,7 +400,7 @@ export default function VideoDictation() {
                 </button>
               </div>
             ) : (
-              <div className="h-[500px] overflow-y-auto p-4">
+              <div className="p-4 h-full overflow-y-auto">
                 <Transcript transcripts={transcripts} currentIndex={currentIndex} />
               </div>
             )}
