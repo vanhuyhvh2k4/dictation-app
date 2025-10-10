@@ -54,13 +54,34 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
         placeholder="Type what you hear..."
         minLength={1}
         required
+        disabled={isCorrect}
       />
-      <button
-        onClick={onSkip}
-        className="px-4 py-2 ml-auto bg-gray-500 text-white rounded"
-      >
-        Skip
-      </button>
+      
+      <div className="flex items-center justify-end gap-2">
+        {!isCorrect && !skipped ? (
+          <>
+            <button
+              onClick={onCheck}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Submit
+            </button>
+            <button
+              onClick={onSkip}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+            >
+              Skip
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={onNext}
+            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            Next →
+          </button>
+        )}
+      </div>
 
       {feedback && (
         <div className="text-sm">
@@ -101,23 +122,11 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
               <p className="text-sm text-gray-600">
                 {currentTranscript?.pronunciation || currentTranscript?.text}
               </p>
-              <button
-                onClick={onNext}
-                className="px-4 py-2 bg-green-500 text-white rounded shadow hover:bg-green-600"
-              >
-                Next →
-              </button>
             </div>
           )}
         </div>
       )}
 
-      <button
-        onClick={onCheck}
-        className="px-4 py-2 bg-red-600 text-white rounded"
-      >
-        Submit
-      </button>
     </div>
   );
 };

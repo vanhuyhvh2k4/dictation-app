@@ -194,6 +194,7 @@ export default function VideoDictation() {
       setFeedback(null);
       setScore(null);
       setIsCorrect(false);
+      setSkipped(false);
 
       if (videoRef.current) {
         videoRef.current.currentTime = transcripts[nextIndex].start;
