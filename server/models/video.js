@@ -12,6 +12,17 @@ const VideoModel = (sequelize, DataTypes) => {
     level: { type: DataTypes.STRING, allowNull: true }
   });
 
+  // Define associations
+  Video.associate = (models) => {
+    Video.hasMany(models.UserProgress, {
+      foreignKey: 'videoId'
+    });
+    
+    Video.hasMany(models.Transcript, {
+      foreignKey: 'videoId'
+    });
+  };
+
   return Video;
 };
 

@@ -18,12 +18,17 @@ const models = {
 };
 
 // Quan hệ
+// Video - Transcript
 models.Video.hasMany(models.Transcript, { foreignKey: 'videoId', onDelete: 'CASCADE' });
 models.Transcript.belongsTo(models.Video, { foreignKey: 'videoId' });
 
+// Video - UserProgress
+models.Video.hasMany(models.UserProgress, { foreignKey: 'videoId', onDelete: 'CASCADE' });
+models.UserProgress.belongsTo(models.Video, { foreignKey: 'videoId' });
+
+// User - UserProgress
 models.User.hasMany(models.UserProgress, { foreignKey: 'userId' });
 models.UserProgress.belongsTo(models.User, { foreignKey: 'userId' });
-models.UserProgress.belongsTo(models.Video, { foreignKey: 'videoId' });
 
 models.User.hasMany(models.Wordlist, { foreignKey: 'userId' });
 models.Wordlist.belongsTo(models.User, { foreignKey: 'userId' });

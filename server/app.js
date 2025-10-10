@@ -11,6 +11,7 @@ import videoRoutes from './routes/video.js';
 import dictationRoutes from './routes/dictation.js';
 import wordRoutes from './routes/word.js';
 import transcriptRoutes from './routes/transcript.js';
+import progressRoutes from './routes/progress.js';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/videos', videoRoutes);
 app.use('/api/dictation', dictationRoutes);
 app.use('/api/word', wordRoutes);
 app.use('/api/transcript', transcriptRoutes);
+app.use('/api/progress', progressRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'development' }));
