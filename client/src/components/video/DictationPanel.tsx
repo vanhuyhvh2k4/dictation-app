@@ -34,6 +34,11 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
 }) => {
   const [showAnswer, setShowAnswer] = useState(false);
 
+  // Xác định nội dung hiển thị trong textarea
+  const displayText = (isCorrect || skipped) && currentTranscript 
+    ? currentTranscript.text 
+    : answer;
+
   return (
     <div className="p-4 flex flex-col gap-4 h-full">
       <div className="flex items-center gap-2">
@@ -49,17 +54,26 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
       </div>
 
       <textarea
-        value={answer}
+        value={displayText}
         onChange={(e) => onAnswerChange(e.target.value)}
-        className="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-600"
+        className={`w-full border rounded-lg p-3 text-lg focus:ring-2 focus:ring-red-600 ${
+          (isCorrect || skipped) ? 'bg-gray-50' : ''
+        }`}
         rows={3}
         placeholder="Type what you hear..."
         minLength={1}
         required
-        disabled={isCorrect}
+        disabled={isCorrect || skipped}
       />
       
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          {isCorrect && (
+            <p className="text-green-600 font-semibold">
+              ✅ You are correct!
+            </p>
+          )}
+        </div>
         {!isCorrect && !skipped ? (
           <>
             <button
@@ -121,23 +135,7 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
               </div>
             </>
           ) : (
-            <div className="space-y-3">
-              {isCorrect ? (
-                <p className="text-green-600 font-semibold">
-                  ✅ You are correct!
-                </p>
-              ) : (
-                <p className="text-yellow-600 font-semibold">
-                  ⏭️ You skipped this one
-                </p>
-              )}
-              {currentTranscript?.translation && (
-                <p className="text-gray-700">{currentTranscript.translation}</p>
-              )}
-              <p className="text-sm text-gray-600">
-                {currentTranscript?.pronunciation || currentTranscript?.text}
-              </p>
-            </div>
+            <div className="space-y-3"></div>
           )}
         </div>
       )}
