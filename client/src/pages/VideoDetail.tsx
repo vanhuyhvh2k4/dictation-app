@@ -227,6 +227,27 @@ export default function VideoDictation() {
   return (
     <div className="min-h-screen bg-white text-gray-800">
       <Header />
+      <div className="py-3">
+        <nav className="max-w-6xl mx-auto px-4">
+          <ol className="flex items-center space-x-2 text-sm">
+            <li>
+              <a href="/" className="text-gray-600 hover:text-red-600">All topics</a>
+            </li>
+            <li>
+              <span className="text-gray-400">/</span>
+            </li>
+            <li>
+              <a href="/stories" className="text-gray-600 hover:text-red-600">Stories for Kids</a>
+            </li>
+            <li>
+              <span className="text-gray-400">/</span>
+            </li>
+            <li>
+              <span className="text-red-600">{video?.title || "Loading..."}</span>
+            </li>
+          </ol>
+        </nav>
+      </div>
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Video */}
@@ -341,7 +362,7 @@ export default function VideoDictation() {
 
             <button
               onClick={handleCheckAnswer}
-              className="px-4 py-2 bg-green-600 text-white rounded"
+              className="px-4 py-2 bg-red-600 text-white rounded"
             >
               Submit
             </button>
