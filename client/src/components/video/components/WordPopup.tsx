@@ -33,12 +33,12 @@ export const WordPopup: React.FC<WordPopupProps> = ({
       <div className="space-y-2">
         <div>
           <div className="text-xs text-gray-500 mb-1">Original</div>
-          <div className="text-gray-900 font-medium">{word}</div>
+          <div className="text-sm text-gray-900 font-medium">{word}</div>
         </div>
         <div className="border-t my-2" />
         <div>
           <div className="text-xs text-gray-500 mb-1">Translation</div>
-          <div className="text-gray-900">{translation}</div>
+          <div className="text-sm text-gray-900">{translation || 'Something went wrong!'}</div>
         </div>
       </div>
     </div>

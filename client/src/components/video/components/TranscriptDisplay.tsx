@@ -101,7 +101,7 @@ export const TranscriptDisplay: React.FC<TranscriptDisplayProps> = ({
               key={index}
               onClick={(e) => handleWordClick(e, word)}
               className={`
-                inline-block px-1 py-0.5 rounded
+                inline-block px-1 py-0.5 rounded text-lg
                 cursor-pointer hover:bg-gray-100 hover:text-red-600
                 ${popup.word === word ? 'bg-gray-100 text-red-600' : ''}
               `}
