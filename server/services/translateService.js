@@ -3,7 +3,7 @@ import axios from 'axios';
 const OPENROUTER_API_URL = process.env.OPENROUTER_API_URL;
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-const translateText = async (text) => {
+const translateText = async (text, targetLanguage = 'vietnamese') => {
   try {
     const response = await axios.post(
       OPENROUTER_API_URL,
@@ -15,7 +15,7 @@ const translateText = async (text) => {
             content: [
               {
                 type: "text",
-                text: `let translate this sentence to vietnamese: '${text}'. Just return answer`
+                text: `Translate this text to ${targetLanguage}: '${text}'. Just return the translation without any additional text or explanation.`
               }
             ]
           }
