@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FeedbackItem } from '../../types/feedback';
 import type { Transcript } from '../../types/transcript';
 
@@ -39,6 +39,48 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
     ? currentTranscript.text 
     : answer;
 
+  const [translation, setTranslation] = useState<string>('');
+  const [selectedLanguage, setSelectedLanguage] = useState('vietnamese');
+
+  // Effect to auto-translate when answer is correct
+  useEffect(() => {
+    if ((isCorrect || skipped) && currentTranscript) {
+      handleTranslate();
+    }
+  }, [isCorrect, skipped, currentTranscript, selectedLanguage]);
+
+  const languages = [
+    { code: 'vietnamese', name: 'Tiếng Việt' },
+    { code: 'japanese', name: '日本語' },
+    { code: 'korean', name: '한국어' },
+    { code: 'chinese', name: '中文' },
+    { code: 'french', name: 'Français' },
+    { code: 'german', name: 'Deutsch' },
+    { code: 'spanish', name: 'Español' }
+  ];
+
+  const handleTranslate = async () => {
+    if (!currentTranscript) return;
+    
+    try {
+      const response = await fetch('http://localhost:3000/api/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: currentTranscript.text,
+          targetLanguage: selectedLanguage
+        }),
+      });
+      
+      const data = await response.json();
+      setTranslation(data.translation);
+    } catch (error) {
+      console.error('Translation error:', error);
+    }
+  };
+
   return (
     <div className="p-4 flex flex-col gap-4 h-full">
       <div className="flex items-center gap-2">
@@ -46,7 +88,7 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
           {currentIndex + 1} / {transcripts.length}
         </span>
         <button
-          className="px-3 py-1 text-sm bg-red-600 text-white rounded"
+          className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
           onClick={onPlay}
         >
           ▶ Play
@@ -135,11 +177,44 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
               </div>
             </>
           ) : (
-            <div className="space-y-3"></div>
+            <div className="space-y-4 mt-4 bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex-1">
+                  <div className="text-xs text-gray-500 mb-2">Original Text</div>
+                  <p className="text-gray-900">{currentTranscript?.text}</p>
+                </div>
+                <div className="shrink-0">
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => {
+                      setSelectedLanguage(e.target.value);
+                      setTranslation(''); // Clear previous translation
+                    }}
+                    className="px-3 py-1.5 text-sm border rounded text-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  >
+                    {languages.map(lang => (
+                      <option key={lang.code} value={lang.code}>
+                        {lang.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="border-t my-3"></div>
+
+              <>
+                <div className="text-xs text-gray-500 mb-2">Translation</div>
+                {translation ? (
+                  <p className="text-gray-900">{translation}</p>
+                ) : (
+                  <p className="text-gray-400 italic">Translation will appear here...</p>
+                )}
+              </>
+            </div>
           )}
         </div>
       )}
-
     </div>
   );
 };
