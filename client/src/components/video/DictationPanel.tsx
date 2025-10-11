@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import type { FeedbackItem } from '../../types/feedback';
 import type { Transcript } from '../../types/transcript';
+import { FeedbackDisplay } from './components/FeedbackDisplay';
+import { TranslationDisplay } from './components/TranslationDisplay';
+import { LanguageSelector } from './components/LanguageSelector';
+import { TranscriptDisplay } from './components/TranscriptDisplay';
 
 interface DictationPanelProps {
   currentIndex: number;
@@ -51,23 +55,16 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
     }
   }, [currentTranscript, selectedLanguage, isCorrect, skipped]);
 
-  const languages = [
-    { code: 'vietnamese', name: 'Tiếng Việt' },
-    { code: 'japanese', name: 'Tiếng Nhật' },
-    { code: 'korean', name: 'Tiếng Hàn' },
-    { code: 'chinese', name: 'Tiếng Trung' },
-    { code: 'french', name: 'Tiếng Pháp' },
-    { code: 'german', name: 'Tiếng Đức' },
-    { code: 'spanish', name: 'Tiếng Tây Ban Nha' },
-    { code: 'english', name: 'Tiếng Anh' },
-    { code: 'italian', name: 'Tiếng Ý' },
-    { code: 'russian', name: 'Tiếng Nga' },
-  ];
+  const handleLanguageChange = (language: string) => {
+    setSelectedLanguage(language);
+    setTranslation(''); // Clear previous translation
+  };
 
   const handleTranslate = async () => {
     if (!currentTranscript) return;
     
     setIsTranslating(true);
+    setTranslation('');
     try {
       const response = await fetch('http://localhost:3000/api/translate', {
         method: 'POST',
@@ -153,87 +150,32 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
         <div className="text-sm">
           {!isCorrect && !skipped ? (
             <>
-              <div className="space-y-3">
-                <p className="flex flex-wrap gap-1">
-                  {feedback.map((f, idx) => (
-                    <span
-                      key={idx}
-                      className={`px-1 rounded ${
-                        f.correct ? "bg-green-100 text-green-700" : ""
-                      }`}
-                    >
-                      {f.correct ? f.word : showAnswer ? (
-                        <span className="px-1 rounded text-red-600 bg-red-100">{f.word}</span>
-                      ) : (
-                        <span className="px-1 rounded text-red-600 bg-red-100">{'*'.repeat(f.word.length)}</span>
-                      )}
-                    </span>
-                  ))}
-                </p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="show-answer"
-                    checked={showAnswer}
-                    onChange={(e) => setShowAnswer(e.target.checked)}
-                    className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                  />
-                  <label htmlFor="show-answer" className="text-sm text-gray-600">
-                    Show full answer
-                  </label>
-                </div>
-              </div>
+              <FeedbackDisplay
+                feedback={feedback}
+                showAnswer={showAnswer}
+                onToggleShowAnswer={setShowAnswer}
+              />
             </>
           ) : (
             <div className="space-y-4 mt-4 bg-gray-50 rounded-lg p-4">
               <div className="flex justify-between items-start gap-4">
-                <div className="flex-1">
-                  <div className="text-xs text-gray-500 mb-2">Original Text</div>
-                  <p className="text-gray-900">{currentTranscript?.text}</p>
-                </div>
+                {currentTranscript && (
+                  <TranscriptDisplay text={currentTranscript.text} />
+                )}
                 <div className="shrink-0">
-                  <select
-                    value={selectedLanguage}
-                    onChange={(e) => {
-                      setSelectedLanguage(e.target.value);
-                      setTranslation(''); // Clear previous translation
-                    }}
-                    className="px-3 py-1.5 text-sm border rounded text-gray-700 focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                  >
-                    {languages.map(lang => (
-                      <option key={lang.code} value={lang.code}>
-                        {lang.name}
-                      </option>
-                    ))}
-                  </select>
+                  <LanguageSelector
+                    selectedLanguage={selectedLanguage}
+                    onLanguageChange={handleLanguageChange}
+                  />
                 </div>
               </div>
 
               <div className="border-t my-3"></div>
 
-              <>
-                <div className="flex justify-between items-center mb-2">
-                  <div className="text-xs text-gray-500">Translation</div>
-                  <div className="h-4 flex items-center">
-                    {isTranslating && (
-                      <div className="flex items-center gap-2">
-                        <svg className="animate-spin h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span className="text-xs text-gray-500">Translating...</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="min-h-[24px]">
-                  {translation ? (
-                    <p className="text-gray-900">{translation}</p>
-                  ) : !isTranslating && (
-                    <p className="text-gray-400 italic">Translation will appear here...</p>
-                  )}
-                </div>
-              </>
+              <TranslationDisplay
+                translation={translation}
+                isTranslating={isTranslating}
+              />
             </div>
           )}
         </div>
