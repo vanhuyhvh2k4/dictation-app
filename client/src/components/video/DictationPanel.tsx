@@ -160,7 +160,29 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
             <div className="space-y-4 mt-4 bg-gray-50 rounded-lg p-4">
               <div className="flex justify-between items-start gap-4">
                 {currentTranscript && (
-                  <TranscriptDisplay text={currentTranscript.text} />
+                  <TranscriptDisplay 
+                    text={currentTranscript.text}
+                    onWordClick={async (word) => {
+                      try {
+                        const response = await fetch('http://localhost:3000/api/translate', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            text: word,
+                            targetLanguage: selectedLanguage
+                          }),
+                        });
+                        
+                        const data = await response.json();
+                        return data.translation;
+                      } catch (error) {
+                        console.error('Translation error:', error);
+                        return 'Translation failed';
+                      }
+                    }}
+                  />
                 )}
                 <div className="shrink-0">
                   <LanguageSelector
