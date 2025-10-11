@@ -1,17 +1,17 @@
-// server.js
+// app.js
 import 'dotenv/config'; // tự động gọi dotenv.config()
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
-import { sequelize } from './models/index.js';
 
 import authRoutes from './routes/auth.js';
 import videoRoutes from './routes/video.js';
-import dictationRoutes from './routes/dictation.js';
-import wordRoutes from './routes/word.js';
 import transcriptRoutes from './routes/transcript.js';
+import wordRoutes from './routes/word.js';
+import dictationRoutes from './routes/dictation.js';
 import progressRoutes from './routes/progress.js';
+import translateRoutes from './routes/translate.js';
 
 const app = express();
 
@@ -33,10 +33,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/videos', videoRoutes);
+app.use('/api/transcripts', transcriptRoutes);
+app.use('/api/words', wordRoutes);
 app.use('/api/dictation', dictationRoutes);
-app.use('/api/word', wordRoutes);
-app.use('/api/transcript', transcriptRoutes);
 app.use('/api/progress', progressRoutes);
+app.use('/api/translate', translateRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'development' }));
@@ -47,16 +48,5 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ message: err.message || 'Internal Server Error' });
 });
 
-const PORT = process.env.PORT || 3000;
-
-(async () => {
-  try {
-    await sequelize.authenticate();
-    console.log('DB connected');
-    // await sequelize.sync({ alter: true }); // dev only
-    app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
-  } catch (err) {
-    console.error('Unable to start', err);
-    process.exit(1);
-  }
-})();
+// Export the Express app instance
+export default app;
