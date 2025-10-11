@@ -269,7 +269,7 @@ export default function VideoDictation() {
           />
 
           {/* Right Panel - Changes based on active tab */}
-          <div className="border rounded-xl shadow h-[400px] flex flex-col">
+          <div className="border rounded-xl shadow h-[450px] flex flex-col">
             {activeTab === 'dictation' ? (
               <DictationPanel
                 currentIndex={currentIndex}

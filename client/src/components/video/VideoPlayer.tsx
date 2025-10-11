@@ -15,7 +15,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   onPlay,
 }) => {
   return (
-    <div className="rounded-xl overflow-hidden shadow border flex flex-col h-[400px]">
+    <div className="rounded-xl overflow-hidden shadow border flex flex-col h-[450px]">
       {video && (
         <div className="flex-1">
           <video

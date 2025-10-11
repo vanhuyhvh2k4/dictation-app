@@ -5,6 +5,7 @@ import { FeedbackDisplay } from './components/FeedbackDisplay';
 import { TranslationDisplay } from './components/TranslationDisplay';
 import { LanguageSelector } from './components/LanguageSelector';
 import { TranscriptDisplay } from './components/TranscriptDisplay';
+import { VoiceInput } from './components/VoiceInput';
 
 interface DictationPanelProps {
   currentIndex: number;
@@ -100,14 +101,13 @@ export const DictationPanel: React.FC<DictationPanelProps> = ({
         </button>
       </div>
 
-      <textarea
+      <VoiceInput
         value={displayText}
-        onChange={(e) => onAnswerChange(e.target.value)}
+        onChange={onAnswerChange}
         className={`w-full border rounded-lg p-3 text-lg focus:ring-2 focus:ring-red-600 ${
           (isCorrect || skipped) ? 'bg-gray-50' : ''
         }`}
-        rows={3}
-        placeholder="Type what you hear..."
+        placeholder="Type or use voice input..."
         minLength={1}
         required
         disabled={isCorrect || skipped}
