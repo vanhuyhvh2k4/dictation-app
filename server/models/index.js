@@ -7,6 +7,7 @@ import Video from './video.js';
 import Transcript from './transcript.js';
 import UserProgress from './userProgress.js';
 import Wordlist from './wordlist.js';
+import Topic from './topic.js';
 
 // Khởi tạo models
 const models = {
@@ -14,7 +15,8 @@ const models = {
   Video: Video(sequelize, Sequelize.DataTypes),
   Transcript: Transcript(sequelize, Sequelize.DataTypes),
   UserProgress: UserProgress(sequelize, Sequelize.DataTypes),
-  Wordlist: Wordlist(sequelize, Sequelize.DataTypes)
+  Wordlist: Wordlist(sequelize, Sequelize.DataTypes),
+  Topic: Topic
 };
 
 // Quan hệ
@@ -32,6 +34,17 @@ models.UserProgress.belongsTo(models.User, { foreignKey: 'userId' });
 
 models.User.hasMany(models.Wordlist, { foreignKey: 'userId' });
 models.Wordlist.belongsTo(models.User, { foreignKey: 'userId' });
+
+// Topic - Video
+models.Topic.hasMany(models.Video, { 
+  foreignKey: 'topicId',
+  as: 'videos',
+  onDelete: 'SET NULL'
+});
+models.Video.belongsTo(models.Topic, { 
+  foreignKey: 'topicId',
+  as: 'topic'
+});
 
 // Export
 export { sequelize };

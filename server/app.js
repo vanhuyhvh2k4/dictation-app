@@ -12,6 +12,7 @@ import wordRoutes from './routes/word.js';
 import dictationRoutes from './routes/dictation.js';
 import progressRoutes from './routes/progress.js';
 import translateRoutes from './routes/translate.js';
+import topicRoutes from './routes/topic.js';
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use('/api/words', wordRoutes);
 app.use('/api/dictation', dictationRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/translate', translateRoutes);
+app.use('/api/topics', topicRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'development' }));

@@ -5,6 +5,16 @@ const VideoModel = (sequelize, DataTypes) => {
     title: { type: DataTypes.STRING, allowNull: false },
     channel: { type: DataTypes.STRING, allowNull: false },
     view: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    topicId: { 
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'topics',
+        key: 'id'
+      },
+      onUpdate: 'CASCADE',
+      onDelete: 'SET NULL'
+    },
     thumbnail: { type: DataTypes.STRING, allowNull: false },
     url: { type: DataTypes.STRING, allowNull: false },
     duration: { type: DataTypes.STRING, allowNull: false },
@@ -20,6 +30,11 @@ const VideoModel = (sequelize, DataTypes) => {
     
     Video.hasMany(models.Transcript, {
       foreignKey: 'videoId'
+    });
+
+    Video.belongsTo(models.Topic, {
+      foreignKey: 'topicId',
+      as: 'topic'
     });
   };
 

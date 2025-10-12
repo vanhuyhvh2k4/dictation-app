@@ -11,18 +11,6 @@ const UserProgressModel = (sequelize, DataTypes) => {
     lastUpdated: { type: DataTypes.DATE, defaultValue: DataTypes.NOW } // Last time progress was updated
   });
 
-  // Define associations
-  UserProgress.associate = (models) => {
-    UserProgress.belongsTo(models.User, {
-      foreignKey: 'userId',
-      as: 'user'
-    });
-    UserProgress.belongsTo(models.Video, {
-      foreignKey: 'videoId',
-      as: 'video'
-    });
-  };
-
   return UserProgress;
 };
 
