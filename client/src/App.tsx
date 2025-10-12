@@ -23,6 +23,7 @@ import NotFound from "./pages/OtherPage/NotFound";
 import HomeDashboard  from "./pages/Dashboard/Home";
 import Calendar from "./pages/Calendar";
 import AddLesson from "./pages/Lessions/AddLesson";
+import AllTopics from "./pages/AllTopics";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         <Route path="/videos/:id" element={<OptionalAuthRoute><VideoDetail /></OptionalAuthRoute>} />
         <Route path="/words" element={<OptionalAuthRoute><WordList /></OptionalAuthRoute>} />
         <Route path="/upload" element={<OptionalAuthRoute><VideoUpload /></OptionalAuthRoute>} />
+        <Route path="/topics" element={<OptionalAuthRoute><AllTopics /></OptionalAuthRoute>} />
 
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/admin/dashboard" element={<HomeDashboard />} />
