@@ -5,7 +5,8 @@ import { createTopicSchema, updateTopicSchema } from '../validators/topicSchema.
 export const getAllTopics = async (req, res) => {
   try {
     const topics = await Topic.findAll({
-      order: [['name', 'ASC']]
+      order: [['title', 'ASC']],
+      attributes: ['id', 'title', 'levels', 'lessons', 'hasVideo', 'image']
     });
     res.json(topics);
   } catch (error) {
@@ -39,10 +40,10 @@ export const createTopic = async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    // Check for duplicate slug
-    const existingTopic = await Topic.findOne({ where: { name: value.name } });
+    // Check for duplicate title
+    const existingTopic = await Topic.findOne({ where: { title: value.title } });
     if (existingTopic) {
-      return res.status(400).json({ message: 'Topic already exists' });
+      return res.status(400).json({ message: 'Topic with this title already exists' });
     }
 
     const topic = await Topic.create(value);

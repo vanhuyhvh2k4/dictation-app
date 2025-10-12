@@ -8,14 +8,24 @@ const Topic = sequelize.define('Topic', {
     primaryKey: true,
     autoIncrement: true,
   },
-  name: {
+  title: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: true,
+  levels: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  lessons: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0
+  },
+  hasVideo: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   },
   image: {
     type: DataTypes.STRING,
