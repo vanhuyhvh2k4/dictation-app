@@ -22,9 +22,10 @@ import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import HomeDashboard  from "./pages/Dashboard/Home";
 import Calendar from "./pages/Calendar";
-import AddLesson from "./pages/Lessions/AddLesson";
+import AddLesson from "./pages/Lessons/AddLesson";
 import AllTopics from "./pages/AllTopics";
 import TopicVideos from "./pages/TopicVideos";
+import LessonManagement from "./pages/Lessons/LessonManagement";
 
 function App() {
   return (
@@ -42,6 +43,8 @@ function App() {
             <Route path="/admin/dashboard" element={<HomeDashboard />} />
 
             <Route path="/admin/add-lesson" element={<AddLesson />} />
+
+            <Route path="/admin/lessons-management" element={<LessonManagement />} />
 
             {/* Others Page */}
             <Route path="/admin/profile" element={<UserProfiles />} />

@@ -19,6 +19,7 @@ export interface Video {
   id: string;
   title: string;
   url: string;
+  status: 'publish' | 'draft';
   thumbnail: string;
   duration: string;
   channel: string;
@@ -40,6 +41,7 @@ export interface UploadVideoData {
   title: string;
   channel: string;
   level: 'intermediate' | 'upper-intermediate' | 'advanced' | 'proficient';
+  status: 'publish' | 'draft';
   thumbnail: File;
   video: File;
   transcript: File;

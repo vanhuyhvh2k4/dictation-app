@@ -19,7 +19,8 @@ const VideoModel = (sequelize, DataTypes) => {
     url: { type: DataTypes.STRING, allowNull: false },
     duration: { type: DataTypes.STRING, allowNull: false },
     date: { type: DataTypes.DATEONLY, allowNull: true },
-    level: { type: DataTypes.STRING, allowNull: true }
+    level: { type: DataTypes.STRING, allowNull: true },
+    status: { type: DataTypes.ENUM('publish', 'draft'), allowNull: false, defaultValue: 'publish' },
   });
 
   // Define associations

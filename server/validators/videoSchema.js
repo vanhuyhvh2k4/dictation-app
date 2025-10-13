@@ -5,4 +5,5 @@ export const videoSchema = Joi.object({
     channel: Joi.string().min(1).max(255).required(),
     duration: Joi.string().required(),
     level: Joi.string().optional().default('intermediate'),
+    status: Joi.string().valid('publish', 'draft').required().default('publish'),
 });

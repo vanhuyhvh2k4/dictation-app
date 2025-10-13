@@ -40,6 +40,10 @@ const navItems: NavItem[] = [
     icon: <UserCircleIcon />,
     name: "Lessons",
     path: "/admin/add-lesson",
+    subItems: [
+      { name: "Add Lesson", path: "/admin/add-lesson", pro: false, },
+      { name: "Manage Lessons", path: "/admin/lessons-management", pro: false },
+    ],
   },
   {
     name: "Forms",

@@ -7,6 +7,7 @@ interface FormData {
   title: string;
   channel: string;
   level: 'intermediate' | 'upper-intermediate' | 'advanced' | 'proficient';
+  status: 'publish' | 'draft';
 }
 
 interface Files {
@@ -28,7 +29,8 @@ const AddLessonForm: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     title: '',
     channel: '',
-    level: 'intermediate'
+    level: 'intermediate',
+    status: 'draft'
   });
   
   const [files, setFiles] = useState<Files>({
@@ -149,6 +151,7 @@ const AddLessonForm: React.FC = () => {
         title: formData.title,
         channel: formData.channel,
         level: formData.level,
+        status: formData.status,
         video: files.video,
         thumbnail: files.thumbnail,
         transcript: files.transcript,
@@ -169,7 +172,7 @@ const AddLessonForm: React.FC = () => {
       // Reset form after delay
       setTimeout(() => {
         setShowSuccess(false);
-        setFormData({ title: '', channel: '', level: 'intermediate' });
+        setFormData({ title: '', channel: '', level: 'intermediate', status: 'draft' });
         setFiles({ thumbnail: null, video: null, transcript: null });
         setPreviews({ thumbnail: null });
         setUploadProgress(0);
@@ -253,6 +256,35 @@ const AddLessonForm: React.FC = () => {
                   ))}
                 </select>
               </div>
+            </div>
+
+            {/* Status Toggle */}
+            <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg">
+              <div>
+                <h3 className="font-semibold text-gray-800">Trạng thái bài học</h3>
+                <p className="text-sm text-gray-600">
+                  {formData.status === 'publish' 
+                    ? 'Bài học sẽ được hiển thị công khai' 
+                    : 'Bài học sẽ được lưu dưới dạng nháp'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({
+                  ...prev,
+                  status: prev.status === 'publish' ? 'draft' : 'publish'
+                }))
+              }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
+                  formData.status === 'publish' ? 'bg-indigo-600' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    formData.status === 'publish' ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
             </div>
 
             {/* File Uploads */}
@@ -438,7 +470,7 @@ const AddLessonForm: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setFormData({ title: '', channel: '', level: 'intermediate' });
+                  setFormData({ title: '', channel: '', level: 'intermediate', status: 'draft' });
                   setFiles({ thumbnail: null, video: null, transcript: null });
                   setPreviews({ thumbnail: null });
                 }}

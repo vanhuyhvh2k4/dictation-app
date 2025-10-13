@@ -54,6 +54,7 @@ export const uploadVideo = async (data: UploadVideoData): Promise<Video> => {
     formData.append('title', data.title);
     formData.append('channel', data.channel);
     formData.append('level', data.level);
+    formData.append('status', data.status);
     
     // Thêm duration nếu có
     if (data.duration) {
