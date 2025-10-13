@@ -24,6 +24,7 @@ import HomeDashboard  from "./pages/Dashboard/Home";
 import Calendar from "./pages/Calendar";
 import AddLesson from "./pages/Lessions/AddLesson";
 import AllTopics from "./pages/AllTopics";
+import TopicVideos from "./pages/TopicVideos";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
         <Route path="/words" element={<OptionalAuthRoute><WordList /></OptionalAuthRoute>} />
         <Route path="/upload" element={<OptionalAuthRoute><VideoUpload /></OptionalAuthRoute>} />
         <Route path="/topics" element={<OptionalAuthRoute><AllTopics /></OptionalAuthRoute>} />
+        <Route path="/topics/:topicId/videos" element={<OptionalAuthRoute><TopicVideos /></OptionalAuthRoute>} />
 
         <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route path="/admin/dashboard" element={<HomeDashboard />} />

@@ -35,7 +35,7 @@ export const topicService = {
       // Transform the response data to match our Topic interface
       const topic: Topic = {
         id: response.data.id.toString(),
-        title: response.data.name,
+        title: response.data.title,
         levels: response.data.levels || 'A1',
         lessons: response.data.lessons || 0,
         hasVideo: response.data.hasVideo || false,

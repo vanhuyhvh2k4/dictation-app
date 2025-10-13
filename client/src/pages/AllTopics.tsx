@@ -4,15 +4,7 @@ import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
 import { topicService } from '../services/topicService';
 import { useNavigate } from 'react-router-dom';
-
-interface Topic {
-  id: string;
-  title: string;
-  levels: string;
-  lessons: number;
-  hasVideo?: boolean;
-  image: string;
-}
+import type { Topic } from '../types/topic';
 
 const LearningTopics: React.FC = () => {
   const [topics, setTopics] = useState<Topic[]>([]);

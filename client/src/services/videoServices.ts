@@ -28,3 +28,14 @@ export const getVideoById = async (id: string): Promise<Video> => {
     throw error;
   }
 };
+
+// Lấy videos theo topic id
+export const getVideosByTopicId = async (topicId: string): Promise<Video[]> => {
+  try {
+    const response = await axiosInstance.get<Video[]>(`${API_PATH}/topic/${topicId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching topic videos:", error);
+    throw error;
+  }
+};

@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { getVideos } from "../services/videoServices";
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
-import Cookies from "js-cookie";
+import VideoCard from "../components/video/VideoCard";
 import type { Video } from "../types/video";
 
 export default function HomePage() {
   const [selectedLevel, setSelectedLevel] = useState<string>("intermediate");
   const [videosByLevel, setVideosByLevel] = useState<{ [key: string]: Video[] }>({});
   const [loading, setLoading] = useState<boolean>(true);
-  const isLoggedIn = !!Cookies.get("token");
-
   const levels = ["intermediate", "upper-intermediate", "advanced", "proficient"];
 
   const fetchVideosByLevel = async (level: string) => {
@@ -42,11 +39,6 @@ export default function HomePage() {
   useEffect(() => {
     fetchVideosByLevel(selectedLevel);
   }, []);
-
-  const getProgressPercentage = (progress: Video['progress']) => {
-    if (!progress) return 0;
-    return Math.round((progress.transcriptsCompleted / progress.totalTranscripts) * 100);
-  };
 
   if (loading) return (
     <div className="min-h-screen bg-white">
@@ -123,56 +115,7 @@ export default function HomePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {videosByLevel[level]?.map((video: Video) => (
-                <Link
-                  key={video.id}
-                  to={`/videos/${video.id}`}
-                  className="rounded-xl overflow-hidden shadow hover:shadow-lg transition block"
-                >
-                  <div className="relative">
-                    <img
-                      src={video.thumbnail}
-                      alt={video.title}
-                      className="w-full aspect-video object-cover"
-                    />
-                    <span className="absolute bottom-2 right-2 bg-black text-white text-xs px-2 py-1 rounded">
-                      {video.duration}
-                    </span>
-                  </div>
-                  <div className="p-3">
-                    <h5 className="font-semibold text-sm mb-1">{video.title}</h5>
-                    <p className="text-xs text-gray-500">
-                      {video.channel} • {video.view} • {video.date}
-                    </p>
-                    
-                    {/* Progress bar - Show for logged in users */}
-                    {isLoggedIn && (
-                      <div className="mt-2">
-                        <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1">
-                          <div 
-                            className="bg-red-600 h-1.5 rounded-full transition-all duration-300"
-                            style={{ width: `${getProgressPercentage(video.progress)}%` }}
-                          />
-                        </div>
-                        <div className="flex justify-between items-center text-xs text-gray-500">
-                          <span>
-                            {video.progress ? (
-                              `${video.progress.transcriptsCompleted} / ${video.progress.totalTranscripts} completed`
-                            ) : (
-                              "Not started"
-                            )}
-                          </span>
-                          <span>
-                            {video.progress ? (
-                              `${video.progress.totalScore.toFixed(0)} points`
-                            ) : (
-                              "0 points"
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </Link>
+                <VideoCard key={video.id} video={video} />
               ))}
             </div>
           </div>
