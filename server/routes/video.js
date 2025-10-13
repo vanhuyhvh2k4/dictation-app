@@ -15,6 +15,10 @@ import optionalAuth from '../middlewares/optionalAuth.js';
 
 router.get("/", optionalAuth, videoCtrl.getListVideos);
 
+// Get videos by topic ID
+router.get("/topic/:topicId", optionalAuth, videoCtrl.getVideosByTopicId);
+
+// Get video by ID
 router.get("/:id", videoCtrl.getVideoById);
 
 // POST /api/video/upload

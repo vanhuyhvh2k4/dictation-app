@@ -212,6 +212,106 @@ export const uploadVideo = async (req, res, next) => {
   next();
 };
 
+// Get videos by topic ID
+export const getVideosByTopicId = async (req, res) => {
+  try {
+    const { topicId } = req.params;
+    const userId = req.userId; // Get from auth middleware if user is logged in
+
+    // Configure includes for the query
+    const includes = [
+      {
+        model: Transcript,
+        attributes: ['id']
+      }
+    ];
+
+    // Add UserProgress to query if user is logged in
+    if (userId) {
+      includes.push({
+        model: UserProgress,
+        where: { userId },
+        required: false, // LEFT JOIN to get videos without progress too
+        attributes: [
+          'id',
+          'userId',
+          'videoId',
+          'currentTranscriptIndex',
+          'transcriptsCompleted',
+          'totalScore',
+          'completed'
+        ]
+      });
+    }
+
+    // Find all videos for the topic
+    const videos = await Video.findAll({
+      where: { topicId },
+      order: [["createdAt", "DESC"]],
+      include: includes
+    });
+
+    // Transform the videos and generate signed URLs
+    const formattedVideos = await Promise.all(
+      videos.map(async (video) => {
+        try {
+          const plainVideo = video.get({ plain: true });
+
+          // Generate signed URL for video
+          const { data: signedVideoData, error: videoError } = await supabase.storage
+            .from(`${BUCKET_NAME}/videos`)
+            .createSignedUrl(video.url, 60 * 60); // 1 hour expiry
+            
+          if (videoError) throw videoError;
+
+          // Generate signed URL for thumbnail
+          const { data: signedThumbnailData, error: thumbnailError } = await supabase.storage
+            .from(`${BUCKET_NAME}/thumbnails`)
+            .createSignedUrl(video.thumbnail, 60 * 60);
+            
+          if (thumbnailError) throw thumbnailError;
+
+          // Format progress data if user is logged in
+          const totalTranscripts = plainVideo.Transcripts?.length || 0;
+          let progressData = null;
+
+          if (userId && plainVideo.UserProgresses?.length > 0) {
+            const progress = plainVideo.UserProgresses[0];
+            progressData = {
+              currentTranscriptIndex: progress.currentTranscriptIndex,
+              transcriptsCompleted: progress.transcriptsCompleted,
+              totalScore: progress.totalScore,
+              completed: progress.completed,
+              totalTranscripts
+            };
+          }
+
+          // Return formatted video object
+          return {
+            ...plainVideo,
+            url: signedVideoData?.signedUrl,
+            thumbnail: signedThumbnailData?.signedUrl,
+            progress: progressData,
+            Transcripts: undefined,
+            UserProgresses: undefined
+          };
+        } catch (err) {
+          return {
+            ...video,
+            url: video.url,
+            error: err.message || "Failed to create signed URL",
+          };
+        }
+      })
+    );
+
+    res.status(200).json(formattedVideos);
+  } catch (error) {
+    console.error("Error fetching videos by topic:", error);
+    res.status(500).json({ error: "Failed to fetch videos for this topic" });
+  }
+};
+
 export const uploadThumbnail = async (req, res, next) => {
   // Nếu file không đầy đủ
   if (!req.files.thumbnail) {
