@@ -33,7 +33,7 @@ const LearningTopics: React.FC = () => {
   }, []);
 
   const handleTopicClick = (topicId: string) => {
-    navigate(`/topics/${topicId}`);
+    navigate(`/topics/${topicId}/videos`);
   };
 
   return (
