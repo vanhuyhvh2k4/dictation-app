@@ -19,13 +19,13 @@ export interface Video {
   id: string;
   title: string;
   url: string;
-  status: 'publish' | 'draft';
+  status: string;
   thumbnail: string;
   duration: string;
   channel: string;
   view: string;
   date: string;
-  level?: string;   // mức độ (beginner, intermediate,...)
+  level?: string;  
   Transcripts: Transcript[];
   progress?: {
     currentTranscriptIndex: number;
@@ -40,7 +40,7 @@ export interface Video {
 export interface UploadVideoData {
   title: string;
   channel: string;
-  level: 'intermediate' | 'upper-intermediate' | 'advanced' | 'proficient';
+  level: 'beginner' | 'intermediate' | 'advanced';
   status: 'publish' | 'draft';
   thumbnail: File;
   video: File;

@@ -6,10 +6,10 @@ import VideoCard from "../components/video/VideoCard";
 import type { Video } from "../types/video";
 
 export default function HomePage() {
-  const [selectedLevel, setSelectedLevel] = useState<string>("intermediate");
+  const [selectedLevel, setSelectedLevel] = useState<string>("beginner");
   const [videosByLevel, setVideosByLevel] = useState<{ [key: string]: Video[] }>({});
   const [loading, setLoading] = useState<boolean>(true);
-  const levels = ["intermediate", "upper-intermediate", "advanced", "proficient"];
+  const levels = ["beginner", "intermediate", "advanced"];
 
   const fetchVideosByLevel = async (level: string) => {
     try {
@@ -101,16 +101,14 @@ export default function HomePage() {
         {levels.map(level => (
           <div key={level} className={`mb-12 ${selectedLevel === level ? '' : 'hidden'}`}>
             <h4 className="text-lg font-semibold mb-4 capitalize">
-              {level === 'intermediate' && 'B1 - Intermediate'}
-              {level === 'upper-intermediate' && 'B2 - Upper Intermediate'}
+              {level === 'beginner' && 'A1 - Intermediate'}
+              {level === 'intermediate' && 'B1 - Upper Intermediate'}
               {level === 'advanced' && 'C1 - Advanced'}
-              {level === 'proficient' && 'C2 - Proficient'}
             </h4>
             <p className="text-gray-600 mb-6">
-              {level === 'intermediate' && 'Listening practice to help you understand the main points of clear, standard speech about everyday or job-related topics.'}
-              {level === 'upper-intermediate' && 'Practice with natural, fluent speech and a variety of accents. Understand main ideas of complex texts.'}
+              {level === 'beginner' && 'Listening practice to help you understand the main points of clear, standard speech about everyday or job-related topics.'}
+              {level === 'intermediate' && 'Practice with natural, fluent speech and a variety of accents. Understand main ideas of complex texts.'}
               {level === 'advanced' && 'Master complex technical discussions and abstract topics. Handle nuanced expressions and implied meanings.'}
-              {level === 'proficient' && 'Understand virtually everything heard or read. Express spontaneously, fluently and precisely.'}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -6,7 +6,7 @@ import { uploadVideo } from '../../services/videoServices';
 interface FormData {
   title: string;
   channel: string;
-  level: 'intermediate' | 'upper-intermediate' | 'advanced' | 'proficient';
+  level: 'beginner' | 'intermediate' | 'advanced';
   status: 'publish' | 'draft';
 }
 
@@ -21,7 +21,7 @@ interface Previews {
 }
 
 interface Level {
-  value: 'intermediate' | 'upper-intermediate' | 'advanced' | 'proficient';
+  value: 'beginner' | 'intermediate' | 'advanced';
   label: string;
 }
 
@@ -50,9 +50,8 @@ const AddLessonForm: React.FC = () => {
 
   const levels: Level[] = [
     { value: 'intermediate', label: 'Beginner (A1-A2)' },
-    { value: 'upper-intermediate', label: 'Intermediate (B1-B2)' },
+    { value: 'intermediate', label: 'Intermediate (B1-B2)' },
     { value: 'advanced', label: 'Advanced (C1-C2)' },
-    { value: 'proficient', label: 'Proficient (C2+)' },
   ];
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>): void => {
