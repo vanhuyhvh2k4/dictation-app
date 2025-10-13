@@ -33,9 +33,9 @@ export default function Header() {
 
     return (
         <header className="p-4 border-b flex justify-between items-center">
-            <Link to="/home" className="text-2xl font-bold text-red-600">DD Dictation Daily</Link>
+            <Link to="/" className="text-2xl font-bold text-red-600">DD Dictation Daily</Link>
             <nav className="flex gap-6 text-sm text-gray-600">
-                <Link to="/home" className="hover:text-red-600">All exercises</Link>
+                <Link to="/topics" className="hover:text-red-600">All topics</Link>
                 <Link to="/users" className="hover:text-red-600">Top users</Link>
                 <Link to="/lessons" className="hover:text-red-600">Other lessons</Link>
                 {token ? (
