@@ -59,7 +59,7 @@ router.post(
       return res.status(400).json({ error: "Unsupported thumbnail format (jpg, png allowed)" });
     }
 
-    if (allowedSubtitleTypes.includes(transcriptFile.mimetype)) {
+    if (!allowedSubtitleTypes.includes(transcriptFile.mimetype)) {
       return res.status(400).json({ error: "Unsupported transcript format (txt, srt, vtt allowed)" });
     }
 

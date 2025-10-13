@@ -34,3 +34,15 @@ export interface Video {
     totalTranscripts: number;
   } | null;
 }
+
+
+export interface UploadVideoData {
+  title: string;
+  channel: string;
+  level: 'intermediate' | 'upper-intermediate' | 'advanced' | 'proficient';
+  thumbnail: File;
+  video: File;
+  transcript: File;
+  duration?: string;
+  onProgress?: (progress: number) => void;
+}

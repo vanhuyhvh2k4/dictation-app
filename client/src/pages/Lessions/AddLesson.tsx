@@ -1,5 +1,7 @@
 import React, { useState, type ChangeEvent } from 'react';
 import { Upload, Video, FileText, Image, Save, X, CheckCircle } from 'lucide-react';
+import type { UploadVideoData } from '../../types/video';
+import { uploadVideo } from '../../services/videoServices';
 
 interface FormData {
   title: string;
@@ -40,8 +42,9 @@ const AddLessonForm: React.FC = () => {
   });
   
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
-
-  const [errors, setErrors] = useState<{ video?: string }>({});
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errors, setErrors] = useState<{ video?: string; submit?: string }>({});
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
 
   const levels: Level[] = [
     { value: 'intermediate', label: 'Beginner (A1-A2)' },
@@ -65,6 +68,16 @@ const AddLessonForm: React.FC = () => {
       if (type === 'video' && file.size > 50 * 1024 * 1024) {
         setErrors({ video: 'Kích thước video vượt quá 50MB. Vui lòng chọn file nhỏ hơn.' });
         return;
+      }
+
+      // Kiểm tra file transcript
+      if (type === 'transcript') {
+        const allowedExtensions = ['.txt', '.srt', '.vtt'];
+        const fileExtension = file.name.toLowerCase().slice((Math.max(0, file.name.lastIndexOf(".")) || Infinity));
+        if (!allowedExtensions.includes(fileExtension)) {
+          setErrors({ submit: 'File transcript phải có định dạng .txt, .srt hoặc .vtt' });
+          return;
+        }
       }
       
       setErrors({});
@@ -102,26 +115,74 @@ const AddLessonForm: React.FC = () => {
     }
   };
 
-  const handleSubmit = (): void => {
-    console.log('Form Data:', formData);
-    console.log('Files:', files);
-    
-    // TODO: Gọi API để lưu dữ liệu
-    // const formDataToSend = new FormData();
-    // formDataToSend.append('title', formData.title);
-    // formDataToSend.append('channel', formData.channel);
-    // formDataToSend.append('level', formData.level);
-    // if (files.thumbnail) formDataToSend.append('thumbnail', files.thumbnail);
-    // if (files.video) formDataToSend.append('video', files.video);
-    // if (files.transcript) formDataToSend.append('transcript', files.transcript);
-    
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-      setFormData({ title: '', channel: '', level: 'intermediate' });
-      setFiles({ thumbnail: null, video: null, transcript: null });
-      setPreviews({ thumbnail: null });
-    }, 2000);
+  const handleSubmit = async (): Promise<void> => {
+    try {
+      // Reset errors
+      setErrors({});
+      setLoading(true);
+
+      // Validate files
+      if (!files.video || !files.thumbnail || !files.transcript) {
+        setErrors({ submit: 'Please upload all required files' });
+        return;
+      }
+
+      // Get video duration if possible
+      let duration: string | undefined;
+      if (files.video) {
+        const videoElement = document.createElement('video');
+        videoElement.preload = 'metadata';
+        videoElement.src = URL.createObjectURL(files.video);
+        await new Promise((resolve) => {
+          videoElement.onloadedmetadata = () => {
+            const minutes = Math.floor(videoElement.duration / 60);
+            const seconds = Math.floor(videoElement.duration % 60);
+            duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            URL.revokeObjectURL(videoElement.src);
+            resolve(null);
+          };
+        });
+      }
+
+      // Prepare upload data
+      const uploadData: UploadVideoData = {
+        title: formData.title,
+        channel: formData.channel,
+        level: formData.level,
+        video: files.video,
+        thumbnail: files.thumbnail,
+        transcript: files.transcript,
+        duration
+      };
+
+      // Upload video
+      await uploadVideo({
+        ...uploadData,
+        onProgress: (progress: number) => {
+          setUploadProgress(progress);
+        }
+      });
+
+      // Show success message
+      setShowSuccess(true);
+      
+      // Reset form after delay
+      setTimeout(() => {
+        setShowSuccess(false);
+        setFormData({ title: '', channel: '', level: 'intermediate' });
+        setFiles({ thumbnail: null, video: null, transcript: null });
+        setPreviews({ thumbnail: null });
+        setUploadProgress(0);
+      }, 2000);
+
+    } catch (error) {
+      console.error('Upload error:', error);
+      setErrors({
+        submit: error instanceof Error ? error.message : 'Failed to upload video. Please try again.'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isFormValid = (): boolean => {
@@ -327,20 +388,51 @@ const AddLessonForm: React.FC = () => {
               </div>
             </div>
 
+            {/* Error Message */}
+            {errors.submit && (
+              <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-lg">
+                {errors.submit}
+              </div>
+            )}
+
+            {/* Upload Progress */}
+            {uploadProgress > 0 && uploadProgress < 100 && (
+              <div className="space-y-2">
+                <div className="h-2 bg-gray-200 rounded-full">
+                  <div 
+                    className="h-2 bg-indigo-600 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-sm text-gray-600 text-center">
+                  Uploading... {uploadProgress}%
+                </p>
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="flex gap-4 pt-4">
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || loading}
                 className={`flex-1 flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-semibold transition ${
-                  isFormValid()
+                  isFormValid() && !loading
                     ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                <Save className="w-5 h-5" />
-                Lưu Bài Học
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Đang tải lên...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-5 h-5" />
+                    Lưu Bài Học
+                  </>
+                )}
               </button>
               
               <button
