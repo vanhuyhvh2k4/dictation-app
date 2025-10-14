@@ -1,4 +1,5 @@
 import models from "../models/index.js";
+import { getSignedUrl } from "../config/supabase.js";
 const { UserProgress, Video, Transcript } = models;
 
 // Cập nhật tiến độ của video và điểm số
@@ -131,7 +132,24 @@ export const getAllUserProgress = async (req, res) => {
             order: [['lastUpdated', 'DESC']] // Sắp xếp theo thời gian cập nhật gần nhất
         });
 
-        res.json({ data: progress });
+        // Transform data and get signed URLs for thumbnails
+        const transformedProgress = await Promise.all(progress.map(async (item) => {
+            const progressData = item.toJSON();
+            
+            if (progressData.Video && progressData.Video.thumbnail) {
+                const { url, error } = await getSignedUrl('/thumbnails', progressData.Video.thumbnail);
+                if (error) {
+                    console.error('Error getting signed URL:', error);
+                    progressData.Video.thumbnail = null;
+                } else {
+                    progressData.Video.thumbnail = url;
+                }
+            }
+
+            return progressData;
+        }));
+
+        res.json({ data: transformedProgress });
 
     } catch (error) {
         console.error('Error getting all user progress:', error);
