@@ -124,89 +124,6 @@ export const getListVideos = async (req, res) => {
   }
 };
 
-// Lấy video daily
-export const getDailyVideo = async (req, res) => {
-  try {
-    const video = await Video.findOne({
-      order: [["date", "DESC"]],
-      include: [{ model: Transcript }],
-    });
-
-    if (!video) return res.status(404).json({ message: "No video found" });
-
-    return res.json(video);
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Error fetching daily video", error: error.message });
-  }
-};
-
-// Lấy video theo ID
-export const getVideoById = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const video = await Video.findByPk(id, {
-      include: [{ model: Transcript }],
-    });
-
-    if (!video) return res.status(404).json({ message: "Video not found" });
-
-    // Tạo signed URL tạm thời
-    const { data: signedVideoData, videoError } = await supabase.storage
-      .from(`${BUCKET_NAME}/videos`)
-      .createSignedUrl(video.url, 60 * 60); // 1 giờ
-
-    if (videoError) return res.status(500).json({ error: error.message });
-
-    // Tạo signed URL tạm thời
-    const { data: signedThumbnailData, thumbnailError } = await supabase.storage
-      .from(`${BUCKET_NAME}/thumbnails`)
-      .createSignedUrl(video.thumbnail, 60 * 60); // 1 giờ
-
-    if (thumbnailError) return res.status(500).json({ error: error.message });
-
-    res.json({
-      ...video.toJSON(),
-      url: signedVideoData.signedUrl,
-      thumbnail: signedThumbnailData.signedUrl,
-    });
-  } catch (error) {
-    return res
-      .status(500)
-      .json({ message: "Error fetching video", error: error.message });
-  }
-};
-
-export const uploadVideo = async (req, res, next) => {
-  // Nếu file không đầy đủ
-  if (!req.files.video) {
-    return res.status(400).json({ error: "Video not uploaded" });
-  }
-
-  const videoFile = req.files.video[0];
-
-  const videoFileName = `${Date.now()}-${videoFile.originalname}`;
-
-  // Upload video
-  const { data: videoData, error: videoError } = await supabase.storage
-    .from(`${BUCKET_NAME}/videos`)
-    .upload(videoFileName, videoFile.buffer, {
-      contentType: videoFile.mimetype,
-      upsert: true,
-    });
-
-  if (videoError) return res.status(500).json({ error: videoError.message });
-
-  console.log("Upload successful", videoData);
-
-  req.video = {
-    url: videoFileName,
-  };
-
-  next();
-};
-
 // Get videos by topic ID
 export const getVideosByTopicId = async (req, res) => {
   try {
@@ -307,6 +224,71 @@ export const getVideosByTopicId = async (req, res) => {
   }
 };
 
+// Lấy video theo ID
+export const getVideoById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const video = await Video.findByPk(id, {
+      include: [{ model: Transcript }],
+    });
+
+    if (!video) return res.status(404).json({ message: "Video not found" });
+
+    // Tạo signed URL tạm thời
+    const { data: signedVideoData, videoError } = await supabase.storage
+      .from(`${BUCKET_NAME}/videos`)
+      .createSignedUrl(video.url, 60 * 60); // 1 giờ
+
+    if (videoError) return res.status(500).json({ error: error.message });
+
+    // Tạo signed URL tạm thời
+    const { data: signedThumbnailData, thumbnailError } = await supabase.storage
+      .from(`${BUCKET_NAME}/thumbnails`)
+      .createSignedUrl(video.thumbnail, 60 * 60); // 1 giờ
+
+    if (thumbnailError) return res.status(500).json({ error: error.message });
+
+    res.json({
+      ...video.toJSON(),
+      url: signedVideoData.signedUrl,
+      thumbnail: signedThumbnailData.signedUrl,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error fetching video", error: error.message });
+  }
+};
+
+export const uploadVideo = async (req, res, next) => {
+  // Nếu file không đầy đủ
+  if (!req.files.video) {
+    return res.status(400).json({ error: "Video not uploaded" });
+  }
+
+  const videoFile = req.files.video[0];
+
+  const videoFileName = `${Date.now()}-${videoFile.originalname}`;
+
+  // Upload video
+  const { data: videoData, error: videoError } = await supabase.storage
+    .from(`${BUCKET_NAME}/videos`)
+    .upload(videoFileName, videoFile.buffer, {
+      contentType: videoFile.mimetype,
+      upsert: true,
+    });
+
+  if (videoError) return res.status(500).json({ error: videoError.message });
+
+  console.log("Upload successful", videoData);
+
+  req.video = {
+    url: videoFileName,
+  };
+
+  next();
+};
+
 export const uploadThumbnail = async (req, res, next) => {
   // Nếu file không đầy đủ
   if (!req.files.thumbnail) {
@@ -343,12 +325,13 @@ export const finalizeUpload = async (req, res, next) => {
     const validatedBody = req.validatedBody;
 
     const newVideo = await Video.create({
-      title: validatedBody.title || "Untitled",
+      title: validatedBody.title,
       url: videoData.url,
       date: new Date(),
       level: validatedBody.level,
       channel: validatedBody.channel,
       view: 0,
+      status: validatedBody.status,
       thumbnail: videoData.thumbnail,
       duration: validatedBody.duration,
     });

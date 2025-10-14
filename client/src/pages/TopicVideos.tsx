@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import type { Video } from '../types/video';
-import { getVideosByTopicId } from '../services/videoServices';
-import { topicService } from '../services/topicService';
+import { getTopicById, getVideosByTopicId } from '../services/topicService';
 import VideoCard from '../components/video/VideoCard';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
@@ -40,7 +39,7 @@ export default function TopicVideos() {
     const fetchTopic = async () => {
       if (!topicId) return null;
       try {
-        const topic = await topicService.getTopicById(topicId);
+        const topic = await getTopicById(topicId);
         console.log(topic);
         
         setTopic(topic);

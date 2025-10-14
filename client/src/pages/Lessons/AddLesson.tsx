@@ -273,6 +273,7 @@ const AddLessonForm: React.FC = () => {
                   ...prev,
                   status: prev.status === 'publish' ? 'draft' : 'publish'
                 }))
+                
               }
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
                   formData.status === 'publish' ? 'bg-indigo-600' : 'bg-gray-200'

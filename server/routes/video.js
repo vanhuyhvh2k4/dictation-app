@@ -8,15 +8,9 @@ import { videoSchema } from "../validators/videoSchema.js";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() }); // giữ file trong memory
 
-// GET /api/video/daily
-router.get("/daily", videoCtrl.getDailyVideo);
-
 import optionalAuth from '../middlewares/optionalAuth.js';
 
 router.get("/", optionalAuth, videoCtrl.getListVideos);
-
-// Get videos by topic ID
-router.get("/topic/:topicId", optionalAuth, videoCtrl.getVideosByTopicId);
 
 // Get video by ID
 router.get("/:id", videoCtrl.getVideoById);

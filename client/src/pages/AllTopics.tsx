@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Video, ChevronRight } from 'lucide-react';
 import Header from '../components/header/Header';
 import Footer from '../components/footer/Footer';
-import { topicService } from '../services/topicService';
+import { getAllTopics } from '../services/topicService';
 import { useNavigate } from 'react-router-dom';
 import type { Topic } from '../types/topic';
 
@@ -18,7 +18,7 @@ const LearningTopics: React.FC = () => {
     const fetchTopics = async () => {
       try {
         setLoading(true);
-        const data = await topicService.getAllTopics();
+        const data = await getAllTopics();
         setTopics(data);
         setError(null);
       } catch (err) {
