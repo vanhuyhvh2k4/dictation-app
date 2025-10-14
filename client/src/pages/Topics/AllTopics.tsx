@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Video, ChevronRight } from 'lucide-react';
-import Header from '../components/header/Header';
-import Footer from '../components/footer/Footer';
-import { getAllTopics } from '../services/topicService';
+import Header from '../../components/header/Header';
+import Footer from '../../components/footer/Footer';
+import { getAllTopics } from '../../services/topicService';
 import { useNavigate } from 'react-router-dom';
-import type { Topic } from '../types/topic';
+import type { Topic } from '../../types/topic';
 
 const LearningTopics: React.FC = () => {
   const [topics, setTopics] = useState<Topic[]>([]);

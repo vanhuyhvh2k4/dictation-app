@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import type { Video } from '../types/video';
-import { getTopicById, getVideosByTopicId } from '../services/topicService';
-import VideoCard from '../components/video/VideoCard';
-import Header from '../components/header/Header';
-import Footer from '../components/footer/Footer';
-import type { Topic } from '../types/topic';
+import type { Video } from '../../types/video';
+import { getTopicById, getVideosByTopicId } from '../../services/topicService';
+import VideoCard from '../../components/video/VideoCard';
+import Header from '../../components/header/Header';
+import Footer from '../../components/footer/Footer';
+import type { Topic } from '../../types/topic';
 
 export default function TopicVideos() {
   const { topicId } = useParams<{ topicId: string }>();
