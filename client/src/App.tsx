@@ -5,7 +5,7 @@ import Home from "./pages/Home";
 import VideoUpload from "./pages/VideoUpload";
 import AppLayout from "./layout/AppLayout";
 import UserProfiles from "./pages/UserProfiles";
-import { OptionalAuthRoute, ProtectedRoute, PublicRoute } from './middleware/authMiddleware';
+import { AdminRoute, OptionalAuthRoute, ProtectedRoute, PublicRoute } from './middleware/authMiddleware';
 import Blank from "./pages/Blank";
 import FormElements from "./pages/Forms/FormElements";
 import BasicTables from "./pages/Tables/BasicTables";
@@ -31,7 +31,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Protected Routes */}
         <Route index path="/" element={<OptionalAuthRoute><Home /></OptionalAuthRoute>} />
         <Route path="/videos/:id" element={<OptionalAuthRoute><VideoDetail /></OptionalAuthRoute>} />
         <Route path="/words" element={<OptionalAuthRoute><WordList /></OptionalAuthRoute>} />
@@ -39,7 +38,7 @@ function App() {
         <Route path="/topics" element={<OptionalAuthRoute><AllTopics /></OptionalAuthRoute>} />
         <Route path="/topics/:topicId/videos" element={<OptionalAuthRoute><TopicVideos /></OptionalAuthRoute>} />
 
-        <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+        <Route element={<AdminRoute><AppLayout /></AdminRoute>}>
             <Route path="/admin/dashboard" element={<HomeDashboard />} />
 
             <Route path="/admin/add-lesson" element={<AddLesson />} />
