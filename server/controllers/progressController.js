@@ -127,29 +127,48 @@ export const getAllUserProgress = async (req, res) => {
             where: { userId },
             include: [{
                 model: Video,
-                attributes: ['title', 'duration', 'thumbnail']
+                attributes: [
+                    'id', 'title', 'channel', 'view', 'topicId', 'thumbnail',
+                    'url', 'duration', 'level', 'status', 'createdAt', 'updatedAt'
+                ]
             }],
-            order: [['lastUpdated', 'DESC']] // Sắp xếp theo thời gian cập nhật gần nhất
+            order: [['lastUpdated', 'DESC']]
         });
 
-        // Transform data and get signed URLs for thumbnails
+        // Transform data and get signed URLs for thumbnails and videos
         const transformedProgress = await Promise.all(progress.map(async (item) => {
             const progressData = item.toJSON();
+            const video = progressData.Video;
             
-            if (progressData.Video && progressData.Video.thumbnail) {
-                const { url, error } = await getSignedUrl('/thumbnails', progressData.Video.thumbnail);
-                if (error) {
-                    console.error('Error getting signed URL:', error);
-                    progressData.Video.thumbnail = null;
-                } else {
-                    progressData.Video.thumbnail = url;
+            // Get signed URL for thumbnail
+            if (video?.thumbnail) {
+                const { url, error } = await getSignedUrl('/thumbnails', video.thumbnail);
+                if (!error) {
+                    video.thumbnail = url;
                 }
             }
 
-            return progressData;
+            // Get signed URL for video
+            if (video?.url) {
+                const { url, error } = await getSignedUrl('/videos', video.url);
+                if (!error) {
+                    video.url = url;
+                }
+            }
+
+            return {
+                ...video,
+                progress: {
+                    currentTranscriptIndex: progressData.currentTranscriptIndex,
+                    transcriptsCompleted: progressData.transcriptsCompleted,
+                    totalScore: progressData.totalScore,
+                    completed: progressData.completed,
+                    totalTranscripts: progressData.totalTranscripts || 0
+                }
+            };
         }));
 
-        res.json({ data: transformedProgress });
+        res.json(transformedProgress);
 
     } catch (error) {
         console.error('Error getting all user progress:', error);
