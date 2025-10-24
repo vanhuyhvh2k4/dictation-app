@@ -163,7 +163,9 @@ export const getAllUserProgress = async (req, res) => {
                     transcriptsCompleted: progressData.transcriptsCompleted,
                     totalScore: progressData.totalScore,
                     completed: progressData.completed,
-                    totalTranscripts: progressData.totalTranscripts || 0
+                    totalTranscripts: progressData.totalTranscripts || 0,
+                    createdAt: progressData.createdAt,
+                    updatedAt: progressData.updatedAt
                 }
             };
         }));
