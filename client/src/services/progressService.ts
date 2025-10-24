@@ -1,4 +1,4 @@
-import { type VideoProgress } from "../types/video";
+import { type Video, type VideoProgress } from "../types/video";
 import axiosInstance from "../config/axios";
 
 const API_PATH = "/progress";
@@ -33,10 +33,10 @@ export const updateVideoProgress = async (
 };
 
 // Get all user progress
-export const getAllProgress = async (): Promise<VideoProgress[]> => {
+export const getAllProgress = async (): Promise<Video[]> => {
   try {
     const response = await axiosInstance.get(API_PATH);
-    return response.data.data;
+    return response.data;
   } catch (error) {
     console.error("Error getting all progress:", error);
     throw error;

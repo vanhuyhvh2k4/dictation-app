@@ -10,7 +10,6 @@ export interface VideoProgress {
   completed: boolean;
   Video?: {
     title: string;
-    Transcripts: { id: string }[];
   };
   totalTranscripts: number;
 }
@@ -24,7 +23,7 @@ export interface Video {
   duration: string;
   channel: string;
   view: string;
-  date: string;
+  createdAt: string;
   level?: string;  
   Transcripts: Transcript[];
   progress?: {
@@ -33,6 +32,8 @@ export interface Video {
     totalScore: number;
     completed: boolean;
     totalTranscripts: number;
+    createdAt: string;
+    updatedAt: string;
   } | null;
 }
 
