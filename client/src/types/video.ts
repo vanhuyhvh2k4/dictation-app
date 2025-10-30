@@ -18,13 +18,13 @@ export interface Video {
   id: string;
   title: string;
   url: string;
-  status: string;
+  status: 'publish' | 'draft';
   thumbnail: string;
   duration: string;
   channel: string;
-  view: string;
+  view: number;
   createdAt: string;
-  level?: string;  
+  level: 'beginner' | 'intermediate' | 'advanced';  
   Transcripts: Transcript[];
   progress?: {
     currentTranscriptIndex: number;
