@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Users, 
   Video, 
@@ -12,155 +12,70 @@ import {
   ArrowDown,
   Calendar
 } from 'lucide-react';
+import { getUserTodayAnalytics } from '../../services/userAnalysisService';
+import { type LessonAnalyticsDataType, type UserAnalyticsDataType } from '../../types/analysis';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-
-interface Lesson {
-  id: string;
-  title: string;
-  channel: string;
-  thumbnail: string;
-  totalUsers: number;
-  completionRate: number;
-  averageScore: number;
-  views: number;
-  level: string;
-}
+import { getLessonAnalytics } from '../../services/lessonAnalysisService';
 
 interface UserStats {
   month: string;
   users: number;
 }
 
-interface LessonEngagement {
+interface LessonEngagementType {
   lessonId: string;
   title: string;
-  activeUsers: number;
+  inProgressUser: number;
   completedUsers: number;
-  inProgressUsers: number;
 }
 
 const AdminDashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState<string>('7days');
+  const [userAnalyticsData, setUserAnalyticsData] = useState<UserAnalyticsDataType | null>(null);
+  const [lessonAnalyticsData, setLessonAnalyticsData] = useState<LessonAnalyticsDataType[] | null>(null);
+  const [LessonEngagement, setLessonEngagement] = useState<LessonEngagementType[] | []>([]);
 
-  // Mock data - Statistics
-  const stats = {
-    totalUsers: 12847,
-    userGrowth: 12.5,
-    totalLessons: 156,
-    lessonGrowth: 8.3,
-    activeToday: 3421,
-    activeTodayGrowth: 5.2,
-    totalViews: 458920,
-    viewsGrowth: 15.7
+  const fetchUserAnalytics = async () => {
+    try {
+      const response = await getUserTodayAnalytics();
+      setUserAnalyticsData(response);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    }
+  };
+  const fetchLessonAnalytics = async () => {
+    try {
+      const response = await getLessonAnalytics();
+      setLessonAnalyticsData(response);
+      
+      // Transform data for LessonEngagement
+      const transformedData: LessonEngagementType[] = response.map(lesson => ({
+        lessonId: lesson.id.toString(),
+        title: lesson.video.title,
+        inProgressUser: lesson.inProgressUsers,
+        completedUsers: lesson.completedUsers
+      }));
+      
+      setLessonEngagement(transformedData);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    }
   };
 
-  // Mock data - Top Lessons
-  const topLessons: Lesson[] = [
-    {
-      id: '1',
-      title: 'The power of believing that you can improve',
-      channel: 'TED Talks',
-      thumbnail: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=200&h=150&fit=crop',
-      totalUsers: 8547,
-      completionRate: 87,
-      averageScore: 4.8,
-      views: 15420,
-      level: 'Intermediate'
-    },
-    {
-      id: '2',
-      title: 'How to learn any language in six months',
-      channel: 'TEDx Talks',
-      thumbnail: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&h=150&fit=crop',
-      totalUsers: 7823,
-      completionRate: 92,
-      averageScore: 4.9,
-      views: 28900,
-      level: 'Beginner'
-    },
-    {
-      id: '3',
-      title: 'Advanced Vocabulary for Business English',
-      channel: 'Business English Pod',
-      thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=200&h=150&fit=crop',
-      totalUsers: 6234,
-      completionRate: 78,
-      averageScore: 4.6,
-      views: 12300,
-      level: 'Advanced'
-    },
-    {
-      id: '4',
-      title: 'English Grammar: Past Simple vs Present Perfect',
-      channel: 'Khan Academy',
-      thumbnail: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=200&h=150&fit=crop',
-      totalUsers: 5890,
-      completionRate: 85,
-      averageScore: 4.7,
-      views: 19200,
-      level: 'Beginner'
-    },
-    {
-      id: '5',
-      title: 'Pronunciation Practice: Common Mistakes',
-      channel: 'Rachel English',
-      thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=200&h=150&fit=crop',
-      totalUsers: 5456,
-      completionRate: 81,
-      averageScore: 4.5,
-      views: 11500,
-      level: 'Intermediate'
-    }
-  ];
+  useEffect(() => {
+    fetchUserAnalytics();
+    fetchLessonAnalytics();
+  }, []); // Fetch data when component mounts
 
   // Mock data - User Growth
   const userGrowthData: UserStats[] = [
-    { month: 'Jan', users: 8500 },
-    { month: 'Feb', users: 9200 },
-    { month: 'Mar', users: 9800 },
-    { month: 'Apr', users: 10500 },
-    { month: 'May', users: 11200 },
-    { month: 'Jun', users: 11900 },
-    { month: 'Jul', users: 12847 }
-  ];
-
-  // Mock data - Lesson Engagement
-  const lessonEngagementData: LessonEngagement[] = [
-    { 
-      lessonId: '1', 
-      title: 'Power of Believing', 
-      activeUsers: 1245, 
-      completedUsers: 7302, 
-      inProgressUsers: 1245 
-    },
-    { 
-      lessonId: '2', 
-      title: 'Learn Any Language', 
-      activeUsers: 1089, 
-      completedUsers: 6734, 
-      inProgressUsers: 1089 
-    },
-    { 
-      lessonId: '3', 
-      title: 'Business Vocabulary', 
-      activeUsers: 892, 
-      completedUsers: 5342, 
-      inProgressUsers: 892 
-    },
-    { 
-      lessonId: '4', 
-      title: 'Grammar Practice', 
-      activeUsers: 756, 
-      completedUsers: 5134, 
-      inProgressUsers: 756 
-    },
-    { 
-      lessonId: '5', 
-      title: 'Pronunciation', 
-      activeUsers: 634, 
-      completedUsers: 4822, 
-      inProgressUsers: 634 
-    }
+    { month: 'Jan', users: 20 },
+    { month: 'Feb', users: 30 },
+    { month: 'Mar', users: 50 },
+    { month: 'Apr', users: 60 },
+    { month: 'May', users: 77 },
+    { month: 'Jun', users: 99 },
+    { month: 'Jul', users: 10 }
   ];
 
   // Level Distribution Data
@@ -204,7 +119,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Time Range Filter */}
-        <div className="mb-6 flex items-center gap-2">
+        {/* <div className="mb-6 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-gray-500" />
           <select
             value={timeRange}
@@ -216,35 +131,35 @@ const AdminDashboard: React.FC = () => {
             <option value="90days">90 ngày qua</option>
             <option value="1year">1 năm qua</option>
           </select>
-        </div>
+        </div> */}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
             title="Tổng Người Dùng"
-            value={stats.totalUsers.toLocaleString()}
-            growth={stats.userGrowth}
+            value={(userAnalyticsData?.total_users ?? 0).toLocaleString()}
+            growth={userAnalyticsData?.user_growth ?? 0}
             icon={<Users className="w-6 h-6 text-blue-600" />}
             color="bg-blue-100"
           />
           <StatCard
             title="Tổng Bài Học"
-            value={stats.totalLessons}
-            growth={stats.lessonGrowth}
+            value={userAnalyticsData?.total_lessons ?? 0}
+            growth={userAnalyticsData?.lesson_growth ?? 0}
             icon={<Video className="w-6 h-6 text-purple-600" />}
             color="bg-purple-100"
           />
           <StatCard
             title="Hoạt Động Hôm Nay"
-            value={stats.activeToday.toLocaleString()}
-            growth={stats.activeTodayGrowth}
+            value={(userAnalyticsData?.active_users_today ?? 0).toLocaleString()}
+            growth={userAnalyticsData?.active_users_growth ?? 0}
             icon={<Activity className="w-6 h-6 text-green-600" />}
             color="bg-green-100"
           />
           <StatCard
             title="Tổng Lượt Xem"
-            value={(stats.totalViews / 1000).toFixed(0) + 'K'}
-            growth={stats.viewsGrowth}
+            value={((userAnalyticsData?.total_views ?? 0)).toFixed(0)}
+            growth={userAnalyticsData?.views_growth ?? 0}
             icon={<Eye className="w-6 h-6 text-orange-600" />}
             color="bg-orange-100"
           />
@@ -344,14 +259,14 @@ const AdminDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {topLessons.map((lesson, index) => (
+                {lessonAnalyticsData?.map((lesson, index) => (
                   <tr key={lesson.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div className="flex-shrink-0 relative">
                           <img 
-                            src={lesson.thumbnail} 
-                            alt={lesson.title}
+                            src={lesson.video.thumbnail} 
+                            alt={lesson.video.title}
                             className="w-16 h-12 object-cover rounded-lg"
                           />
                           <div className="absolute -top-2 -left-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
@@ -359,18 +274,18 @@ const AdminDashboard: React.FC = () => {
                           </div>
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-gray-900 truncate">{lesson.title}</p>
+                          <p className="font-semibold text-gray-900 truncate">{lesson.video.title}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-4 text-sm text-gray-600">{lesson.channel}</td>
+                    <td className="py-4 px-4 text-sm text-gray-600">{lesson.video.channel}</td>
                     <td className="py-4 px-4">
                       <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                        lesson.level === 'Beginner' ? 'bg-green-100 text-green-700' :
-                        lesson.level === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                        lesson.video.level === 'beginner' ? 'bg-green-100 text-green-700' :
+                        lesson.video.level === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
                         'bg-red-100 text-red-700'
                       }`}>
-                        {lesson.level}
+                        {lesson.video.level}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-center">
@@ -393,13 +308,13 @@ const AdminDashboard: React.FC = () => {
                     <td className="py-4 px-4 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <span className="text-yellow-500">⭐</span>
-                        <span className="font-semibold text-gray-900">{lesson.averageScore}</span>
+                        <span className="font-semibold text-gray-900">{lesson.averageRating}</span>
                       </div>
                     </td>
                     <td className="py-4 px-4 text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Eye className="w-4 h-4 text-gray-400" />
-                        <span className="font-semibold text-gray-900">{lesson.views.toLocaleString()}</span>
+                        <span className="font-semibold text-gray-900">{lesson.video.view.toLocaleString()}</span>
                       </div>
                     </td>
                   </tr>
@@ -418,7 +333,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={lessonEngagementData}>
+            <BarChart data={LessonEngagement}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="title" stroke="#6b7280" />
               <YAxis stroke="#6b7280" />
@@ -430,7 +345,7 @@ const AdminDashboard: React.FC = () => {
                 }}
               />
               <Bar dataKey="completedUsers" fill="#10b981" name="Đã hoàn thành" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="activeUsers" fill="#6366f1" name="Đang học" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="inProgressUser" fill="#6366f1" name="Đang học" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
           
@@ -442,7 +357,7 @@ const AdminDashboard: React.FC = () => {
                 <span className="text-sm font-semibold text-gray-700">Đã hoàn thành</span>
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {lessonEngagementData.reduce((sum, l) => sum + l.completedUsers, 0).toLocaleString()}
+              {lessonAnalyticsData?.reduce((sum, l) => sum + l.completedUsers, 0)?.toLocaleString() ?? 0}
               </p>
             </div>
             <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
@@ -451,7 +366,7 @@ const AdminDashboard: React.FC = () => {
                 <span className="text-sm font-semibold text-gray-700">Đang học</span>
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {lessonEngagementData.reduce((sum, l) => sum + l.activeUsers, 0).toLocaleString()}
+                {lessonAnalyticsData?.reduce((sum, l) => sum + l.inProgressUsers, 0).toLocaleString()}
               </p>
             </div>
             <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
@@ -460,7 +375,7 @@ const AdminDashboard: React.FC = () => {
                 <span className="text-sm font-semibold text-gray-700">Tỷ lệ hoàn thành TB</span>
               </div>
               <p className="text-2xl font-bold text-gray-900">
-                {Math.round(topLessons.reduce((sum, l) => sum + l.completionRate, 0) / topLessons.length)}%
+                {lessonAnalyticsData ? Math.round(lessonAnalyticsData.reduce((sum, l) => sum + l.completionRate, 0) / lessonAnalyticsData.length) : 0}%
               </p>
             </div>
           </div>

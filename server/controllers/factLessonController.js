@@ -124,7 +124,7 @@ export const getAllVideoStats = async (req, res) => {
       include: [{
         model: Video,
         as: 'video',
-        attributes: ['id', 'title', 'level', 'thumbnail', 'channel']
+        attributes: ['id', 'title', 'level', 'thumbnail', 'channel', 'view']
       }]
     });
 
