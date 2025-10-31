@@ -27,6 +27,7 @@ import AllTopics from "./pages/Topics/AllTopics";
 import TopicVideos from "./pages/Topics/TopicVideos";
 import LessonManagement from "./pages/Lessons/LessonManagement";
 import LessonHistory from "./pages/LessonHistory";
+import AdminDashboard from "./pages/Dashboard/AdminDashboard";
 
 function App() {
   return (
@@ -42,7 +43,9 @@ function App() {
         <Route path="/history" element={<ProtectedRoute><LessonHistory /></ProtectedRoute>} />
 
         <Route element={<AdminRoute><AppLayout /></AdminRoute>}>
-            <Route path="/admin/dashboard" element={<HomeDashboard />} />
+            <Route index path="/admin/dashboard" element={<AdminDashboard />} />
+
+            {/* <Route path="/admin/dashboard" element={<HomeDashboard />} /> */}
 
             <Route path="/admin/add-lesson" element={<AddLesson />} />
 
