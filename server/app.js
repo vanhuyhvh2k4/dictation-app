@@ -13,6 +13,7 @@ import dictationRoutes from './routes/dictation.js';
 import progressRoutes from './routes/progress.js';
 import translateRoutes from './routes/translate.js';
 import topicRoutes from './routes/topic.js';
+import FactUserService from './services/factUserService.js';
 
 const app = express();
 
@@ -27,6 +28,9 @@ app.use(express.json());
 
 // Nếu client gửi form (application/x-www-form-urlencoded)
 app.use(express.urlencoded({ extended: true }));
+
+// Khởi động cập nhật định kỳ fact_users
+FactUserService.startPeriodicUpdate();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

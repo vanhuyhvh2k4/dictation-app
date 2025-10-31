@@ -8,6 +8,7 @@ import Transcript from './transcript.js';
 import UserProgress from './userProgress.js';
 import Wordlist from './wordlist.js';
 import Topic from './topic.js';
+import FactUser from './fact_user.js';
 
 // Khởi tạo models
 const models = {
@@ -16,7 +17,8 @@ const models = {
   Transcript: Transcript(sequelize, Sequelize.DataTypes),
   UserProgress: UserProgress(sequelize, Sequelize.DataTypes),
   Wordlist: Wordlist(sequelize, Sequelize.DataTypes),
-  Topic: Topic
+  Topic: Topic,
+  FactUser: FactUser(sequelize, Sequelize.DataTypes)
 };
 
 // Quan hệ
