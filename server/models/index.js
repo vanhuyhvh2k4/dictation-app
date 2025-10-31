@@ -10,6 +10,7 @@ import Wordlist from './wordlist.js';
 import Topic from './topic.js';
 import FactUser from './fact_user.js';
 import VideoRating from './videoRating.js';
+import FactLessons from './fact_lessons.js';
 
 // Khởi tạo models
 const models = {
@@ -20,7 +21,8 @@ const models = {
   Wordlist: Wordlist(sequelize, Sequelize.DataTypes),
   Topic: Topic,
   FactUser: FactUser(sequelize, Sequelize.DataTypes),
-  VideoRating: VideoRating(sequelize, Sequelize.DataTypes)
+  VideoRating: VideoRating(sequelize, Sequelize.DataTypes),
+  FactLessons: FactLessons(sequelize, Sequelize.DataTypes)
 };
 
 // Quan hệ
@@ -68,6 +70,16 @@ models.User.hasMany(models.VideoRating, {
 models.VideoRating.belongsTo(models.User, {
   foreignKey: 'userId',
   as: 'user'
+});
+
+// Video - FactLessons
+models.Video.hasMany(models.FactLessons, {
+  foreignKey: 'videoId',
+  as: 'lessons_stats'
+});
+models.FactLessons.belongsTo(models.Video, {
+  foreignKey: 'videoId',
+  as: 'video'
 });
 
 // Export

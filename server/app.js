@@ -15,7 +15,9 @@ import translateRoutes from './routes/translate.js';
 import topicRoutes from './routes/topic.js';
 import analyticsRoutes from './routes/analytics.js';
 import videoRatingRoutes from './routes/videoRating.js';
+import factLessonsRoutes from './routes/factLessons.js';
 import FactUserService from './services/factUserService.js';
+import FactLessonsService from './services/factLessonsService.js';
 
 const app = express();
 
@@ -31,8 +33,9 @@ app.use(express.json());
 // Nếu client gửi form (application/x-www-form-urlencoded)
 app.use(express.urlencoded({ extended: true }));
 
-// Khởi động cập nhật định kỳ fact_users
+// Khởi động cập nhật định kỳ fact_users và fact_lessons
 FactUserService.startPeriodicUpdate();
+FactLessonsService.startPeriodicUpdate();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -48,6 +51,7 @@ app.use('/api/translate', translateRoutes);
 app.use('/api/topics', topicRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api', videoRatingRoutes);
+app.use('/api', factLessonsRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'development' }));
