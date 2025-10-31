@@ -10,7 +10,7 @@ import Wordlist from './wordlist.js';
 import Topic from './topic.js';
 import FactUser from './fact_user.js';
 import VideoRating from './videoRating.js';
-import FactLessons from './fact_lessons.js';
+import FactLessons from './fact_lesson.js';
 
 // Khởi tạo models
 const models = {

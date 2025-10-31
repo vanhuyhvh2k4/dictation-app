@@ -1,5 +1,5 @@
 import express from 'express';
-import * as analyticsCtrl from '../controllers/analyticsController.js';
+import * as analyticsCtrl from '../controllers/factUserController.js';
 import isAdminMiddleware from '../middlewares/isAdminMiddleware.js';
 
 const router = express.Router();
