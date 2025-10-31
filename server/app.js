@@ -14,6 +14,7 @@ import progressRoutes from './routes/progress.js';
 import translateRoutes from './routes/translate.js';
 import topicRoutes from './routes/topic.js';
 import analyticsRoutes from './routes/analytics.js';
+import videoRatingRoutes from './routes/videoRating.js';
 import FactUserService from './services/factUserService.js';
 
 const app = express();
@@ -46,6 +47,7 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/translate', translateRoutes);
 app.use('/api/topics', topicRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api', videoRatingRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'development' }));
