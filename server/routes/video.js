@@ -15,6 +15,9 @@ router.get("/", optionalAuth, videoCtrl.getListVideos);
 // Get video by ID
 router.get("/:id", videoCtrl.getVideoById);
 
+// Update video view
+router.patch("/:videoId/view", videoCtrl.updateVideoView);
+
 // POST /api/video/upload
 router.post(
   "/upload",

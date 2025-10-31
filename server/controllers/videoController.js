@@ -260,6 +260,43 @@ export const getVideoById = async (req, res) => {
   }
 };
 
+// Cập nhật lượt xem video
+export const updateVideoView = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    
+    // Tìm video theo id
+    const video = await Video.findByPk(videoId);
+    
+    if (!video) {
+      return res.status(404).json({ message: "Video not found" });
+    }
+
+    // Kiểm tra trạng thái video có phải là publish không
+    if (video.status !== 'publish') {
+      return res.status(403).json({ 
+        message: "Cannot update view count for unpublished video" 
+      });
+    }
+
+    // Tăng số lượt xem lên 1 và lưu
+    video.view += 1;
+    await video.save();
+
+    return res.status(200).json({ 
+      message: "Video view updated successfully",
+      view: video.view 
+    });
+
+  } catch (error) {
+    console.error("Error updating video view:", error);
+    return res.status(500).json({ 
+      message: "Error updating video view", 
+      error: error.message 
+    });
+  }
+};
+
 export const uploadVideo = async (req, res, next) => {
   // Nếu file không đầy đủ
   if (!req.files.video) {
