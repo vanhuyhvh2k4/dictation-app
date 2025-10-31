@@ -297,6 +297,68 @@ export const updateVideoView = async (req, res) => {
   }
 };
 
+// Cập nhật số lượng người dùng đã xem video
+export const updateVideoTotalUsers = async (req, res) => {
+  try {
+    const { videoId } = req.params;
+    const userId = req.userId; // Lấy từ auth middleware
+
+    // Kiểm tra user đã đăng nhập
+    if (!userId) {
+      return res.status(401).json({ 
+        message: "Authentication required" 
+      });
+    }
+    
+    // Tìm video theo id
+    const video = await Video.findByPk(videoId);
+    
+    if (!video) {
+      return res.status(404).json({ 
+        message: "Video not found" 
+      });
+    }
+
+    // Kiểm tra trạng thái video có phải là publish không
+    if (video.status !== 'publish') {
+      return res.status(403).json({ 
+        message: "Cannot update total users for unpublished video" 
+      });
+    }
+
+    // Kiểm tra xem user đã được tính vào totalUsers chưa
+    const existingProgress = await UserProgress.findOne({
+      where: {
+        userId,
+        videoId
+      }
+    });
+
+    // Nếu chưa có progress record, tăng totalUsers
+    if (!existingProgress) {
+      video.totalUsers += 1;
+      await video.save();
+    } else {
+      return res.status(200).json({ 
+        message: "User has already been counted in total users",
+        totalUsers: video.totalUsers 
+      });
+    }
+
+    return res.status(200).json({ 
+      message: "Video total users updated successfully",
+      totalUsers: video.totalUsers 
+    });
+
+  } catch (error) {
+    console.error("Error updating video total users:", error);
+    return res.status(500).json({ 
+      message: "Error updating video total users", 
+      error: error.message 
+    });
+  }
+};
+
 export const uploadVideo = async (req, res, next) => {
   // Nếu file không đầy đủ
   if (!req.files.video) {

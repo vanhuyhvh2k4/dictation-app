@@ -18,6 +18,9 @@ router.get("/:id", videoCtrl.getVideoById);
 // Update video view
 router.patch("/:videoId/view", videoCtrl.updateVideoView);
 
+// Update video total users
+router.patch("/:videoId/total-users", optionalAuth, videoCtrl.updateVideoTotalUsers);
+
 // POST /api/video/upload
 router.post(
   "/upload",

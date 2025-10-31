@@ -5,6 +5,7 @@ const VideoModel = (sequelize, DataTypes) => {
     title: { type: DataTypes.STRING, allowNull: false },
     channel: { type: DataTypes.STRING, allowNull: false },
     view: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+    totalUsers: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     topicId: { 
       type: DataTypes.INTEGER,
       allowNull: true,
