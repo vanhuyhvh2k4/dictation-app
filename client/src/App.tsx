@@ -4,7 +4,7 @@ import WordList from "./pages/WordList";
 import Home from "./pages/Home";
 import VideoUpload from "./pages/VideoUpload";
 import AppLayout from "./layout/AppLayout";
-import UserProfiles from "./pages/UserProfiles";
+import UserProfiles from "./pages/UserProfile";
 import { AdminRoute, OptionalAuthRoute, ProtectedRoute, PublicRoute } from './middleware/authMiddleware';
 import Blank from "./pages/Blank";
 import FormElements from "./pages/Forms/FormElements";
@@ -38,6 +38,7 @@ function App() {
         <Route path="/upload" element={<OptionalAuthRoute><VideoUpload /></OptionalAuthRoute>} />
         <Route path="/topics" element={<OptionalAuthRoute><AllTopics /></OptionalAuthRoute>} />
         <Route path="/topics/:topicId/videos" element={<OptionalAuthRoute><TopicVideos /></OptionalAuthRoute>} />
+        <Route path="/profile/" element={<ProtectedRoute><UserProfiles /></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute><LessonHistory /></ProtectedRoute>} />
 
         <Route element={<AdminRoute><AppLayout /></AdminRoute>}>
