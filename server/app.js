@@ -13,6 +13,7 @@ import dictationRoutes from './routes/dictation.js';
 import progressRoutes from './routes/progress.js';
 import translateRoutes from './routes/translate.js';
 import topicRoutes from './routes/topic.js';
+import analyticsRoutes from './routes/analytics.js';
 import FactUserService from './services/factUserService.js';
 
 const app = express();
@@ -44,6 +45,7 @@ app.use('/api/dictation', dictationRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/translate', translateRoutes);
 app.use('/api/topics', topicRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ ok: true, env: process.env.NODE_ENV || 'development' }));
