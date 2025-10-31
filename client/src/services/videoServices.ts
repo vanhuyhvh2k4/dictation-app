@@ -29,6 +29,19 @@ export const getVideoById = async (id: string): Promise<Video> => {
   }
 };
 
+// Cập nhật tổng số người dùng cho video
+export const updateVideoTotalUsers = async (videoId: string | number): Promise<{ totalUsers: number }> => {
+  try {
+    const response = await axiosInstance.patch<{ message: string, totalUsers: number }>(
+      `${API_PATH}/${videoId}/total-users`
+    );
+    return { totalUsers: response.data.totalUsers };
+  } catch (error) {
+    console.error("Error updating video total users:", error);
+    throw error;
+  }
+};
+
 // Upload video với files và metadata
 export const uploadVideo = async (data: UploadVideoData): Promise<Video> => {
   try {

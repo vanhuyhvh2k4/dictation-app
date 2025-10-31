@@ -7,7 +7,7 @@ import Transcript from "../components/transcript/Transcript";
 import { BreadcrumbNav } from "../components/video/BreadcrumbNav";
 import { VideoPlayer } from "../components/video/VideoPlayer";
 import { DictationPanel } from "../components/video/DictationPanel";
-import { getVideoById } from "../services/videoServices";
+import { getVideoById, updateVideoTotalUsers } from "../services/videoServices";
 import { getVideoProgress, updateVideoProgress } from "../services/progressService";
 import type { Video } from "../types/video";
 import type { FeedbackItem } from "../types/feedback";
@@ -55,6 +55,26 @@ export default function VideoDictation() {
 
     loadProgress();
   }, [id, transcripts]);
+
+  // Update total users when video starts playing
+  useEffect(() => {
+    const handleFirstPlay = async () => {
+      if (!id || !video) return;
+      try {
+        await updateVideoTotalUsers(id);
+      } catch (error) {
+        // Ignore errors - non-authenticated users or already counted users
+        console.log('Total users update:', error);
+      }
+    };
+
+    const videoElement = videoRef.current;
+    videoElement?.addEventListener('play', handleFirstPlay, { once: true }); // Run only on first play
+
+    return () => {
+      videoElement?.removeEventListener('play', handleFirstPlay);
+    };
+  }, [id, video]);
 
   // Setup cleanup for page unload
   useEffect(() => {
